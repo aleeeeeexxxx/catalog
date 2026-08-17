@@ -4,8 +4,9 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { IContext } from '../context';
-import { IResource, Source } from './artifacts';
+import { IResource, ISystem, Source } from './artifacts';
 import { TenantDbClient, PrismaTx } from './client';
+import { get } from 'node:http';
 
 export interface IResourceToUpdate {
     systemUniqueIdentifier: string;
@@ -17,7 +18,7 @@ export interface IResourceUpdateResult {
     id?: string;
 }
 
-export class Datastore {
+export class ResourceDatastore {
     private client: TenantDbClient;
 
     constructor(client: TenantDbClient) {
@@ -82,6 +83,51 @@ export class Datastore {
             }
 
             return { id: existing.id };
+        });
+    }
+}
+
+export class SystemDatastore {
+    private client: TenantDbClient;
+
+    constructor(client: TenantDbClient) {
+        this.client = client;
+    }
+
+    async create(ctx: IContext, system: ISystem, tx?: PrismaTx): Promise<string> {
+        return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
+            const created = await tx.system.create({
+                data: {
+                    id: uuidv4(),
+                    tenantId: ctx.tenantId,
+                    uniqueIdentifier: system.uniqueIdentifier,
+                    type: system.type,
+                    connection: system.connection,
+                },
+            });
+            return created.id;
+        });
+    }
+
+    async get(ctx: IContext, id: string, tx?: PrismaTx): Promise<ISystem | null> {
+        return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
+            const system = await tx.system.findFirst({
+                where: {
+                    id,
+                    tenantId: ctx.tenantId,
+                    deletedAt: null,
+                },
+            });
+
+            if (!system) {
+                return null;
+            }
+
+            return {
+                uniqueIdentifier: system.uniqueIdentifier,
+                type: system.type,
+                connection: system.connection,
+            };
         });
     }
 }

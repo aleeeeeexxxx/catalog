@@ -12,3 +12,9 @@ export interface IResource {
 export const enum Source {
     autoExtraction = 'autoExtraction',
 }
+
+export interface ISystem {
+    uniqueIdentifier: string;
+    type: string;
+    connection: string;
+}

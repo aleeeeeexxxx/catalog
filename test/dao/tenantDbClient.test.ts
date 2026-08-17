@@ -1,20 +1,32 @@
-import { TenantDbClient } from '../../src/dao';
+import { IContext } from '../../src/context';
+import { SystemDatastore, TenantDbClient } from '../../src/dao';
 import { getSharedTestContext, getTestTenantDbClient } from '../setup';
 
-const ctx = getSharedTestContext();
-let db: TenantDbClient;
+let dbClient: TenantDbClient;
 
 describe('TenantDbClient', () => {
     beforeAll(async () => {
-        db = await getTestTenantDbClient();
+        dbClient = await getTestTenantDbClient();
     });
 
-    it('Should use tenant schema', async () => {
-        await db.transaction(ctx, undefined, async tx => {
-            const result = await tx.$queryRaw<Array<{ search_path: string }>>`SHOW search_path;`;
+    it('tenant isolution', async () => {
+        const ctx1: IContext = {
+            tenantId: 'tenant-1',
+            correlationId: 'correlationId',
+        };
+        const ctx2: IContext = {
+            tenantId: 'tenant-2',
+            correlationId: 'correlationId',
+        };
+        const systems = new SystemDatastore(dbClient);
 
-            expect(result).toBeDefined();
-            expect(result[0].search_path).toEqual(``);
+        const id = await systems.create(ctx1, {
+            uniqueIdentifier: 'tenant isolution',
+            type: 'type',
+            connection: 'connection',
         });
+
+        const ret = await systems.get(ctx2, id);
+        expect(ret).toBeNull();
     });
 });

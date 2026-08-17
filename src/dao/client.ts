@@ -7,7 +7,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { getDatabaseUrl, IDbConfig } from './config';
 import { IContext } from '../context';
-import { getLogger } from '../logger';
 
 export type PrismaTx = Prisma.TransactionClient;
 
@@ -31,6 +30,10 @@ export class TenantDbClient {
         await this.client.$connect();
     }
 
+    async disconnect() {
+        await this.client.$disconnect();
+    }
+
     async transaction<T>(
         ctx: IContext,
         tx: Prisma.TransactionClient | undefined,
@@ -41,7 +44,7 @@ export class TenantDbClient {
         }
 
         return await this.client.$transaction(async tx => {
-            // RLS
+            // RLS -> tenant isolution
             await tx.$executeRaw`
                 SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)
             `;
