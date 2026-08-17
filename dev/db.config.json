@@ -1,0 +1,7 @@
+{
+    "host": "10.237.153.61",
+    "port": "5432",
+    "user": "postgres",
+    "password": "postgres",
+    "database": "catalog"
+}

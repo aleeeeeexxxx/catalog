@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["catalog"]
+
+  relationMode = "prisma"
+}
+
+model System {
+  id       String @id
+  tenantId String // RLS
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  type             String @db.VarChar(256)
+  uniqueIdentifier String @db.VarChar(256)
+  connection       String
+
+  resources Resource[]
+
+  @@unique([tenantId, uniqueIdentifier, deletedAt])
+  @@schema("catalog")
+}
+
+model Resource {
+  id       String @id
+  tenantId String // RLS
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  version String @db.VarChar(256)
+
+  nativeUniqueName String @db.VarChar(256)
+  name             String @db.VarChar(256)
+  desc             String
+
+  systemId String
+  system   System @relation(fields: [systemId], references: [id])
+
+  @@unique([tenantId, systemId, nativeUniqueName, deletedAt])
+  @@index([systemId, id])
+  @@schema("catalog")
+}
