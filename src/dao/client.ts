@@ -7,6 +7,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { getDatabaseUrl, IDbConfig } from './config';
 import { IContext } from '../context';
+import { getLogger } from '../logger';
+
+const logger = getLogger(__filename);
 
 export type PrismaTx = Prisma.TransactionClient;
 
@@ -23,7 +26,9 @@ export class TenantDbClient {
 
         this.client = new PrismaClient({
             adapter,
+            log: [{ level: 'query', emit: 'event' }],
         });
+        this.initLogger();
     }
 
     async connect() {
@@ -31,6 +36,7 @@ export class TenantDbClient {
     }
 
     async disconnect() {
+        await this.pool.end();
         await this.client.$disconnect();
     }
 
@@ -50,6 +56,12 @@ export class TenantDbClient {
             `;
 
             return await fn(tx);
+        });
+    }
+
+    private initLogger() {
+        this.client.$on('query' as never, (ev: Prisma.QueryEvent) => {
+            logger.debug(`Query: ${ev.query} | Params: ${ev.params} | Duration: ${ev.duration}ms`);
         });
     }
 }

@@ -40,6 +40,17 @@ async function createTestTenantDbClient(): Promise<TenantDbClient> {
     return db;
 }
 
+export async function clearTestDb() {
+    const db = await getTestTenantDbClient();
+    const ctx = getSharedTestContext();
+
+    logger.info(`Deleting all current data in ${ctx.tenantId}`);
+    await db.transaction(ctx, undefined, async tx => {
+        await tx.resource.deleteMany();
+        await tx.system.deleteMany();
+    });
+}
+
 const once = new Once<TenantDbClient>();
 
 export async function getTestTenantDbClient(): Promise<TenantDbClient> {

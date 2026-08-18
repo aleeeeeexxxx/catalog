@@ -3,15 +3,15 @@
  */
 
 import { IContext } from '../context';
-import { Datastore, IResourceToUpdate, Source } from '../dao';
+import { ResourceDatastore, IResourceToUpdate, Source } from '../dao';
 import { getLogger } from '../logger';
 
 const logger = getLogger(__filename);
 
 export class AutoExtractionService {
-    private datastore: Datastore;
+    private datastore: ResourceDatastore;
 
-    constructor(datastore: Datastore) {
+    constructor(datastore: ResourceDatastore) {
         this.datastore = datastore;
     }
 

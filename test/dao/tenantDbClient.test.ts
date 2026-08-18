@@ -1,6 +1,6 @@
 import { IContext } from '../../src/context';
 import { SystemDatastore, TenantDbClient } from '../../src/dao';
-import { getSharedTestContext, getTestTenantDbClient } from '../setup';
+import { getTestTenantDbClient } from '../setup';
 
 let dbClient: TenantDbClient;
 

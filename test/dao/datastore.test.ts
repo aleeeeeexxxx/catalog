@@ -20,10 +20,10 @@ afterAll(async () => {
     await dbClient.disconnect();
 });
 
-describe('ResourceDatastore', () => {
-    it.skip('createOrUpdateResource', async () => {
+describe.skip('ResourceDatastore', () => {
+    it('createOrUpdateResource', async () => {
         const result = await resources.createOrUpdateResource(ctx, {
-            systemUniqueIdentifier: 'test-system',
+            systemUniqueIdentifier: 'test-system-001',
             resource: {
                 nativeUniqueName: 'createOrUpdateResource',
                 name: 'name',

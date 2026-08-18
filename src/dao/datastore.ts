@@ -6,7 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { IContext } from '../context';
 import { IResource, ISystem, Source } from './artifacts';
 import { TenantDbClient, PrismaTx } from './client';
-import { get } from 'node:http';
+import { Prisma } from '../../generated/prisma/client';
+import { getLogger } from '../logger';
+
+const logger = getLogger(__filename);
 
 export interface IResourceToUpdate {
     systemUniqueIdentifier: string;
@@ -25,8 +28,52 @@ export class ResourceDatastore {
         this.client = client;
     }
 
-    async getResource(ctx: IContext, id: string, tx?: PrismaTx): Promise<IResource> {
-        throw new Error('not implement yet');
+    async getResource(ctx: IContext, id: string, tx?: PrismaTx): Promise<IResource | null> {
+        return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
+            const resource = await tx.resource.findFirst({
+                where: {
+                    id,
+                    tenantId: ctx.tenantId,
+                    deletedAt: null,
+                },
+            });
+
+            if (!resource) {
+                return null;
+            }
+
+            return {
+                nativeUniqueName: resource.nativeUniqueName,
+                name: resource.name,
+                description: resource.desc,
+                version: resource.version,
+            };
+        });
+    }
+
+    async softDelete(ctx: IContext, id: string, tx?: PrismaTx): Promise<boolean> {
+        return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
+            try {
+                const resource = await tx.resource.update({
+                    where: {
+                        id,
+                        deletedAt: null,
+                    },
+                    data: { deletedAt: new Date() },
+                });
+            } catch (error) {
+                // P2025: Record not found
+                if (
+                    error instanceof Prisma.PrismaClientKnownRequestError &&
+                    error.code === 'P2025'
+                ) {
+                    return false;
+                }
+                throw error;
+            }
+
+            return true;
+        });
     }
 
     async createOrUpdateResource(
@@ -34,6 +81,8 @@ export class ResourceDatastore {
         resource: IResourceToUpdate,
         tx?: PrismaTx
     ): Promise<IResourceUpdateResult> {
+        logger.debug(ctx, `create or update resource. name=${resource.resource.nativeUniqueName}`);
+
         return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
             const system = await tx.system.findFirst({
                 where: {
@@ -44,6 +93,7 @@ export class ResourceDatastore {
             });
 
             if (!system) {
+                logger.debug(ctx, `system ${resource.systemUniqueIdentifier} does not exist`);
                 return {};
             }
 
@@ -56,6 +106,7 @@ export class ResourceDatastore {
             });
 
             if (!existing) {
+                logger.debug(ctx, `resource does not exist, creating new...`);
                 const created = await tx.resource.create({
                     data: {
                         id: uuidv4(),
@@ -70,7 +121,11 @@ export class ResourceDatastore {
                 return { id: created.id };
             }
 
-            if (existing.version > resource.resource.version) {
+            logger.debug(ctx, `resource exists, updating current based on version`);
+
+            if (existing.version < resource.resource.version) {
+                logger.debug(ctx, `current version outdated, updating new one`);
+
                 const updated = await tx.resource.update({
                     where: { id: existing.id },
                     data: {
@@ -82,6 +137,7 @@ export class ResourceDatastore {
                 return { id: updated.id };
             }
 
+            logger.debug(ctx, `current version ahead, skip updating`);
             return { id: existing.id };
         });
     }
@@ -95,6 +151,8 @@ export class SystemDatastore {
     }
 
     async create(ctx: IContext, system: ISystem, tx?: PrismaTx): Promise<string> {
+        logger.debug(ctx, `create new system, name=${system.uniqueIdentifier}`);
+
         return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
             const created = await tx.system.create({
                 data: {
@@ -110,6 +168,8 @@ export class SystemDatastore {
     }
 
     async get(ctx: IContext, id: string, tx?: PrismaTx): Promise<ISystem | null> {
+        logger.debug(ctx, `get system by id, id=${id}`);
+
         return await this.client.transaction(ctx, tx, async (tx: PrismaTx) => {
             const system = await tx.system.findFirst({
                 where: {

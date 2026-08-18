@@ -6,8 +6,8 @@ import pino from 'pino';
 import { basename } from 'path';
 
 const defaultLogger = pino({
+    level: process.env.LOG_LEVEL || 'debug',
     transport: {
-        level: process.env.LOG_LEVEL || 'info',
         target: 'pino-pretty',
         options: {
             colorize: true,
@@ -18,6 +18,6 @@ const defaultLogger = pino({
 });
 
 export function getLogger(component: string): pino.Logger {
-    component = basename(__filename);
+    component = basename(component);
     return defaultLogger.child({ component });
 }
