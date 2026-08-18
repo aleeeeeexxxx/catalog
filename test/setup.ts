@@ -45,7 +45,7 @@ export async function clearTestDb() {
     const ctx = getSharedTestContext();
 
     logger.info(`Deleting all current data in ${ctx.tenantId}`);
-    await db.transaction(ctx, undefined, async tx => {
+    await db.transaction(ctx, async tx => {
         await tx.resource.deleteMany();
         await tx.system.deleteMany();
     });

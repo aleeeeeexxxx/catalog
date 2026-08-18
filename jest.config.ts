@@ -10,5 +10,5 @@ export default {
     },
     transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
     testTimeout: 10000,
-    // setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+    globalSetup: '<rootDir>/jest/globalSetup.ts',
 };

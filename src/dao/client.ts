@@ -42,8 +42,8 @@ export class TenantDbClient {
 
     async transaction<T>(
         ctx: IContext,
-        tx: Prisma.TransactionClient | undefined,
-        fn: (tx: Prisma.TransactionClient) => Promise<T>
+        fn: (tx: Prisma.TransactionClient) => Promise<T>,
+        tx?: Prisma.TransactionClient
     ): Promise<T> {
         if (tx) {
             return await fn(tx);
