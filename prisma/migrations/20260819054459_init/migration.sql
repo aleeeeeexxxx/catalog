@@ -27,10 +27,12 @@ CREATE TABLE "Resource" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_deletedAt_key" ON "System"("tenantId", "uniqueIdentifier", "deletedAt");
+CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_deletedAt_key" ON "System"("tenantId", "uniqueIdentifier")
+WHERE "deletedAt" IS NULL;
 
 -- CreateIndex
 CREATE INDEX "Resource_systemId_id_idx" ON "Resource"("systemId", "id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_deletedAt_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName", "deletedAt");
+CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_deletedAt_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName")
+WHERE "deletedAt" IS NULL;
