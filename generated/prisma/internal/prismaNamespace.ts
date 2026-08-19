@@ -761,8 +761,7 @@ export const SystemScalarFieldEnum = {
   createdAt: 'createdAt',
   deletedAt: 'deletedAt',
   type: 'type',
-  uniqueIdentifier: 'uniqueIdentifier',
-  connection: 'connection'
+  uniqueIdentifier: 'uniqueIdentifier'
 } as const
 
 export type SystemScalarFieldEnum = (typeof SystemScalarFieldEnum)[keyof typeof SystemScalarFieldEnum]

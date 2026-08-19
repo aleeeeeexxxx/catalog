@@ -1,18 +1,11 @@
-import { TenantDbClient } from '../src/dao/client';
+import { DbClient } from '../src/dao/client';
 import { IDbConfig } from '../src/dao/config';
 import { Once } from '../src/utils/once';
 import { getLogger } from '../src/logger';
-import { IContext } from '../src/context';
+import { createNewContext, IContext } from '../src/context';
 import { v4 as uuidv4 } from 'uuid';
 
 const logger = getLogger(__filename);
-
-export function getSharedTestContext(): IContext {
-    return {
-        tenantId: process.env.TEST_TENANT || 'catalog_test',
-        correlationId: uuidv4(),
-    };
-}
 
 function loadDevDbConfig(): IDbConfig {
     const config = require('../dev/db.config.json');
@@ -25,13 +18,13 @@ function loadDevDbConfig(): IDbConfig {
     };
 }
 
-async function createTestTenantDbClient(): Promise<TenantDbClient> {
+async function createTestDbClient(): Promise<DbClient> {
     logger.info('Creating test tenant DB client');
 
     const cfg = loadDevDbConfig();
     logger.info(`Loaded DB config: ${cfg.host}:${cfg.port}/${cfg.database || 'catalog'}`);
 
-    const db = new TenantDbClient(cfg);
+    const db = new DbClient(cfg);
 
     logger.info('Connecting to tenant db');
     await db.connect();
@@ -41,19 +34,19 @@ async function createTestTenantDbClient(): Promise<TenantDbClient> {
 }
 
 export async function clearTestDb() {
-    const db = await getTestTenantDbClient();
-    const ctx = getSharedTestContext();
+    const db = await getTestDbClient();
+    const ctx = createNewContext('setup');
 
     logger.info(`Deleting all current data in ${ctx.tenantId}`);
-    await db.transaction(ctx, async tx => {
+    await db.transaction(ctx, async (tx: any) => {
         await tx.resource.deleteMany();
         await tx.system.deleteMany();
         await tx.stage.deleteMany();
     });
 }
 
-const once = new Once<TenantDbClient>();
+const once = new Once<DbClient>();
 
-export async function getTestTenantDbClient(): Promise<TenantDbClient> {
-    return await once.do(createTestTenantDbClient);
+export async function getTestDbClient(): Promise<DbClient> {
+    return await once.do(createTestDbClient);
 }

@@ -13,7 +13,7 @@ const logger = getLogger(__filename);
 
 export type PrismaTx = Prisma.TransactionClient;
 
-export class TenantDbClient {
+export class DbClient {
     private cfg: IDbConfig;
 
     private pool: Pool;
@@ -50,14 +50,7 @@ export class TenantDbClient {
             return await fn(tx);
         }
 
-        return await this.prisma.$transaction(async tx => {
-            // RLS -> tenant isolution
-            await tx.$executeRaw`
-                SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)
-            `;
-
-            return await fn(tx);
-        });
+        return await this.prisma.$transaction(fn);
     }
 
     private initLogger() {

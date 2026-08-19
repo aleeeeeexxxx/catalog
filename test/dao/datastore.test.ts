@@ -2,17 +2,17 @@
  * @author Alex
  */
 
-import { ResourceDatastore, SystemDatastore, TenantDbClient, StageDatastore } from '../../src/dao';
-import { getSharedTestContext, getTestTenantDbClient } from '../setup';
+import { createNewContext } from '../../src/context';
+import { ResourceDatastore, SystemDatastore, DbClient, StageDatastore } from '../../src/dao';
+import { getTestDbClient } from '../setup';
 
-const ctx = getSharedTestContext();
-let dbClient: TenantDbClient;
+let dbClient: DbClient;
 let resources: ResourceDatastore;
 let systems: SystemDatastore;
 let stage: StageDatastore;
 
 beforeAll(async () => {
-    dbClient = await getTestTenantDbClient();
+    dbClient = await getTestDbClient();
 
     resources = new ResourceDatastore(dbClient);
     systems = new SystemDatastore(dbClient);
@@ -24,6 +24,8 @@ afterAll(async () => {
 });
 
 describe.skip('ResourceDatastore', () => {
+    const ctx = createNewContext('ResourceDatastore');
+
     it('createOrUpdateResource', async () => {
         const result = await resources.createOrUpdateResource(ctx, {
             systemUniqueIdentifier: 'test-system-001',
@@ -40,40 +42,48 @@ describe.skip('ResourceDatastore', () => {
 });
 
 describe('SystemDatastore', () => {
-    it('create', async () => {
-        const systemId = await systems.create(ctx, {
-            uniqueIdentifier: 'test-system-001',
-            type: 'S4HANA',
-            connection: 'https://test.example.com:443',
-        });
+    const ctx = createNewContext('SystemDatastore');
 
-        expect(systemId).toBeDefined();
-        expect(typeof systemId).toBe('string');
-    });
-
-    it('get', async () => {
+    it('create and get', async () => {
         const systemId = await systems.create(ctx, {
             uniqueIdentifier: 'test-system-002',
             type: 'BTP',
-            connection: 'https://btp.example.com',
         });
 
-        const system = await systems.get(ctx, systemId);
+        expect(systemId).toBeDefined();
 
+        const system = await systems.get(ctx, systemId);
         expect(system).toBeDefined();
         expect(system?.uniqueIdentifier).toBe('test-system-002');
         expect(system?.type).toBe('BTP');
-        expect(system?.connection).toBe('https://btp.example.com');
     });
 
     it('get non-existent system', async () => {
         const system = await systems.get(ctx, 'non-existent-id');
+        expect(system).toBeNull();
+    });
 
+    it('isolution', async () => {
+        const ctx1 = createNewContext('SystemDatastore-1');
+        const ctx2 = createNewContext('SystemDatastore-2');
+
+        const systemId1 = await systems.create(ctx1, {
+            uniqueIdentifier: 'test-system-002',
+            type: 'BTP',
+        });
+        const systemId2 = await systems.create(ctx2, {
+            uniqueIdentifier: 'test-system-002',
+            type: 'BTP',
+        });
+
+        const system = await systems.get(ctx1, systemId2);
         expect(system).toBeNull();
     });
 });
 
 describe('StageDatastore', () => {
+    const ctx = createNewContext('StageDatastore');
+
     it('stage', async () => {
         const resources = [
             {

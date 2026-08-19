@@ -4,7 +4,7 @@
 
 import { IContext } from '../context';
 import { IResource, IStage, ISystem, Source } from './artifacts';
-import { TenantDbClient, PrismaTx } from './client';
+import { DbClient, PrismaTx } from './client';
 import { Prisma } from '../../generated/prisma/client';
 import { getLogger } from '../logger';
 import { Generate32UUID } from '../utils/uuid';
@@ -22,9 +22,9 @@ export interface IResourceUpdateResult {
 }
 
 export class ResourceDatastore {
-    private client: TenantDbClient;
+    private client: DbClient;
 
-    constructor(client: TenantDbClient) {
+    constructor(client: DbClient) {
         this.client = client;
     }
 
@@ -156,9 +156,9 @@ export class ResourceDatastore {
 }
 
 export class SystemDatastore {
-    private client: TenantDbClient;
+    private client: DbClient;
 
-    constructor(client: TenantDbClient) {
+    constructor(client: DbClient) {
         this.client = client;
     }
 
@@ -174,7 +174,6 @@ export class SystemDatastore {
                         tenantId: ctx.tenantId,
                         uniqueIdentifier: system.uniqueIdentifier,
                         type: system.type,
-                        connection: system.connection,
                     },
                 });
                 return created.id;
@@ -204,7 +203,6 @@ export class SystemDatastore {
                 return {
                     uniqueIdentifier: system.uniqueIdentifier,
                     type: system.type,
-                    connection: system.connection,
                 };
             },
             tx
@@ -213,9 +211,9 @@ export class SystemDatastore {
 }
 
 export class StageDatastore {
-    private client: TenantDbClient;
+    private client: DbClient;
 
-    constructor(client: TenantDbClient) {
+    constructor(client: DbClient) {
         this.client = client;
     }
 
@@ -244,11 +242,11 @@ export class StageDatastore {
         });
 
         // create items first, in case ingest when items are not staged
-        await this.client.transaction(ctx, async tx => {
+        await this.client.transaction(ctx, async (tx: PrismaTx) => {
             await tx.stagedResource.createMany({ data: stageResources });
         });
 
-        await this.client.transaction(ctx, async tx => {
+        await this.client.transaction(ctx, async (tx: PrismaTx) => {
             await tx.stage.createMany({ data: stages });
         });
 
@@ -258,7 +256,7 @@ export class StageDatastore {
     async listStages(ctx: IContext, startFrom?: string, batch?: number): Promise<string[]> {
         batch = batch ?? 500;
 
-        return await this.client.transaction(ctx, async tx => {
+        return await this.client.transaction(ctx, async (tx: PrismaTx) => {
             const stages = await tx.stage.findMany({
                 where: {
                     ...(startFrom && {
@@ -276,12 +274,12 @@ export class StageDatastore {
                 take: batch,
             });
 
-            return stages.map(s => s.id);
+            return stages.map((s: { id: string }) => s.id);
         });
     }
 
     async delete(ctx: IContext, stageIds: string[]) {
-        await this.client.transaction(ctx, async tx => {
+        await this.client.transaction(ctx, async (tx: PrismaTx) => {
             await tx.stage.deleteMany({
                 where: {
                     id: {
@@ -291,7 +289,7 @@ export class StageDatastore {
             });
         });
 
-        await this.client.transaction(ctx, async tx => {
+        await this.client.transaction(ctx, async (tx: PrismaTx) => {
             await tx.stagedResource.deleteMany({
                 where: {
                     stageId: {

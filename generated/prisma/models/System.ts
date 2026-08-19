@@ -31,7 +31,6 @@ export type SystemMinAggregateOutputType = {
   deletedAt: Date | null
   type: string | null
   uniqueIdentifier: string | null
-  connection: string | null
 }
 
 export type SystemMaxAggregateOutputType = {
@@ -41,7 +40,6 @@ export type SystemMaxAggregateOutputType = {
   deletedAt: Date | null
   type: string | null
   uniqueIdentifier: string | null
-  connection: string | null
 }
 
 export type SystemCountAggregateOutputType = {
@@ -51,7 +49,6 @@ export type SystemCountAggregateOutputType = {
   deletedAt: number
   type: number
   uniqueIdentifier: number
-  connection: number
   _all: number
 }
 
@@ -63,7 +60,6 @@ export type SystemMinAggregateInputType = {
   deletedAt?: true
   type?: true
   uniqueIdentifier?: true
-  connection?: true
 }
 
 export type SystemMaxAggregateInputType = {
@@ -73,7 +69,6 @@ export type SystemMaxAggregateInputType = {
   deletedAt?: true
   type?: true
   uniqueIdentifier?: true
-  connection?: true
 }
 
 export type SystemCountAggregateInputType = {
@@ -83,7 +78,6 @@ export type SystemCountAggregateInputType = {
   deletedAt?: true
   type?: true
   uniqueIdentifier?: true
-  connection?: true
   _all?: true
 }
 
@@ -166,7 +160,6 @@ export type SystemGroupByOutputType = {
   deletedAt: Date | null
   type: string
   uniqueIdentifier: string
-  connection: string
   _count: SystemCountAggregateOutputType | null
   _min: SystemMinAggregateOutputType | null
   _max: SystemMaxAggregateOutputType | null
@@ -197,8 +190,6 @@ export type SystemWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"System"> | Date | string | null
   type?: Prisma.StringFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringFilter<"System"> | string
-  connection?: Prisma.StringFilter<"System"> | string
-  resources?: Prisma.ResourceListRelationFilter
 }
 
 export type SystemOrderByWithRelationInput = {
@@ -208,13 +199,11 @@ export type SystemOrderByWithRelationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
-  connection?: Prisma.SortOrder
-  resources?: Prisma.ResourceOrderByRelationAggregateInput
 }
 
 export type SystemWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  tenantId_uniqueIdentifier_deletedAt?: Prisma.SystemTenantIdUniqueIdentifierDeletedAtCompoundUniqueInput
+  tenantId_uniqueIdentifier?: Prisma.SystemTenantIdUniqueIdentifierCompoundUniqueInput
   AND?: Prisma.SystemWhereInput | Prisma.SystemWhereInput[]
   OR?: Prisma.SystemWhereInput[]
   NOT?: Prisma.SystemWhereInput | Prisma.SystemWhereInput[]
@@ -223,9 +212,7 @@ export type SystemWhereUniqueInput = Prisma.AtLeast<{
   deletedAt?: Prisma.DateTimeNullableFilter<"System"> | Date | string | null
   type?: Prisma.StringFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringFilter<"System"> | string
-  connection?: Prisma.StringFilter<"System"> | string
-  resources?: Prisma.ResourceListRelationFilter
-}, "id" | "tenantId_uniqueIdentifier_deletedAt">
+}, "id" | "tenantId_uniqueIdentifier">
 
 export type SystemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -234,7 +221,6 @@ export type SystemOrderByWithAggregationInput = {
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
-  connection?: Prisma.SortOrder
   _count?: Prisma.SystemCountOrderByAggregateInput
   _max?: Prisma.SystemMaxOrderByAggregateInput
   _min?: Prisma.SystemMinOrderByAggregateInput
@@ -250,7 +236,6 @@ export type SystemScalarWhereWithAggregatesInput = {
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"System"> | Date | string | null
   type?: Prisma.StringWithAggregatesFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringWithAggregatesFilter<"System"> | string
-  connection?: Prisma.StringWithAggregatesFilter<"System"> | string
 }
 
 export type SystemCreateInput = {
@@ -260,8 +245,6 @@ export type SystemCreateInput = {
   deletedAt?: Date | string | null
   type: string
   uniqueIdentifier: string
-  connection: string
-  resources?: Prisma.ResourceCreateNestedManyWithoutSystemInput
 }
 
 export type SystemUncheckedCreateInput = {
@@ -271,8 +254,6 @@ export type SystemUncheckedCreateInput = {
   deletedAt?: Date | string | null
   type: string
   uniqueIdentifier: string
-  connection: string
-  resources?: Prisma.ResourceUncheckedCreateNestedManyWithoutSystemInput
 }
 
 export type SystemUpdateInput = {
@@ -282,8 +263,6 @@ export type SystemUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
-  resources?: Prisma.ResourceUpdateManyWithoutSystemNestedInput
 }
 
 export type SystemUncheckedUpdateInput = {
@@ -293,8 +272,6 @@ export type SystemUncheckedUpdateInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
-  resources?: Prisma.ResourceUncheckedUpdateManyWithoutSystemNestedInput
 }
 
 export type SystemCreateManyInput = {
@@ -304,7 +281,6 @@ export type SystemCreateManyInput = {
   deletedAt?: Date | string | null
   type: string
   uniqueIdentifier: string
-  connection: string
 }
 
 export type SystemUpdateManyMutationInput = {
@@ -314,7 +290,6 @@ export type SystemUpdateManyMutationInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SystemUncheckedUpdateManyInput = {
@@ -324,13 +299,11 @@ export type SystemUncheckedUpdateManyInput = {
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
-export type SystemTenantIdUniqueIdentifierDeletedAtCompoundUniqueInput = {
+export type SystemTenantIdUniqueIdentifierCompoundUniqueInput = {
   tenantId: string
   uniqueIdentifier: string
-  deletedAt: Date | string
 }
 
 export type SystemCountOrderByAggregateInput = {
@@ -340,7 +313,6 @@ export type SystemCountOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
-  connection?: Prisma.SortOrder
 }
 
 export type SystemMaxOrderByAggregateInput = {
@@ -350,7 +322,6 @@ export type SystemMaxOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
-  connection?: Prisma.SortOrder
 }
 
 export type SystemMinOrderByAggregateInput = {
@@ -360,12 +331,6 @@ export type SystemMinOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
-  connection?: Prisma.SortOrder
-}
-
-export type SystemScalarRelationFilter = {
-  is?: Prisma.SystemWhereInput
-  isNot?: Prisma.SystemWhereInput
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -380,105 +345,6 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
-export type SystemCreateNestedOneWithoutResourcesInput = {
-  create?: Prisma.XOR<Prisma.SystemCreateWithoutResourcesInput, Prisma.SystemUncheckedCreateWithoutResourcesInput>
-  connectOrCreate?: Prisma.SystemCreateOrConnectWithoutResourcesInput
-  connect?: Prisma.SystemWhereUniqueInput
-}
-
-export type SystemUpdateOneRequiredWithoutResourcesNestedInput = {
-  create?: Prisma.XOR<Prisma.SystemCreateWithoutResourcesInput, Prisma.SystemUncheckedCreateWithoutResourcesInput>
-  connectOrCreate?: Prisma.SystemCreateOrConnectWithoutResourcesInput
-  upsert?: Prisma.SystemUpsertWithoutResourcesInput
-  connect?: Prisma.SystemWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SystemUpdateToOneWithWhereWithoutResourcesInput, Prisma.SystemUpdateWithoutResourcesInput>, Prisma.SystemUncheckedUpdateWithoutResourcesInput>
-}
-
-export type SystemCreateWithoutResourcesInput = {
-  id: string
-  tenantId: string
-  createdAt?: Date | string
-  deletedAt?: Date | string | null
-  type: string
-  uniqueIdentifier: string
-  connection: string
-}
-
-export type SystemUncheckedCreateWithoutResourcesInput = {
-  id: string
-  tenantId: string
-  createdAt?: Date | string
-  deletedAt?: Date | string | null
-  type: string
-  uniqueIdentifier: string
-  connection: string
-}
-
-export type SystemCreateOrConnectWithoutResourcesInput = {
-  where: Prisma.SystemWhereUniqueInput
-  create: Prisma.XOR<Prisma.SystemCreateWithoutResourcesInput, Prisma.SystemUncheckedCreateWithoutResourcesInput>
-}
-
-export type SystemUpsertWithoutResourcesInput = {
-  update: Prisma.XOR<Prisma.SystemUpdateWithoutResourcesInput, Prisma.SystemUncheckedUpdateWithoutResourcesInput>
-  create: Prisma.XOR<Prisma.SystemCreateWithoutResourcesInput, Prisma.SystemUncheckedCreateWithoutResourcesInput>
-  where?: Prisma.SystemWhereInput
-}
-
-export type SystemUpdateToOneWithWhereWithoutResourcesInput = {
-  where?: Prisma.SystemWhereInput
-  data: Prisma.XOR<Prisma.SystemUpdateWithoutResourcesInput, Prisma.SystemUncheckedUpdateWithoutResourcesInput>
-}
-
-export type SystemUpdateWithoutResourcesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
-export type SystemUncheckedUpdateWithoutResourcesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
-  connection?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
-
-/**
- * Count Type SystemCountOutputType
- */
-
-export type SystemCountOutputType = {
-  resources: number
-}
-
-export type SystemCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  resources?: boolean | SystemCountOutputTypeCountResourcesArgs
-}
-
-/**
- * SystemCountOutputType without action
- */
-export type SystemCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the SystemCountOutputType
-   */
-  select?: Prisma.SystemCountOutputTypeSelect<ExtArgs> | null
-}
-
-/**
- * SystemCountOutputType without action
- */
-export type SystemCountOutputTypeCountResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ResourceWhereInput
-}
 
 
 export type SystemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -488,9 +354,6 @@ export type SystemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   deletedAt?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
-  connection?: boolean
-  resources?: boolean | Prisma.System$resourcesArgs<ExtArgs>
-  _count?: boolean | Prisma.SystemCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -500,7 +363,6 @@ export type SystemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deletedAt?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
-  connection?: boolean
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -510,7 +372,6 @@ export type SystemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   deletedAt?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
-  connection?: boolean
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectScalar = {
@@ -520,22 +381,13 @@ export type SystemSelectScalar = {
   deletedAt?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
-  connection?: boolean
 }
 
-export type SystemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "deletedAt" | "type" | "uniqueIdentifier" | "connection", ExtArgs["result"]["system"]>
-export type SystemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  resources?: boolean | Prisma.System$resourcesArgs<ExtArgs>
-  _count?: boolean | Prisma.SystemCountOutputTypeDefaultArgs<ExtArgs>
-}
-export type SystemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type SystemIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type SystemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "deletedAt" | "type" | "uniqueIdentifier", ExtArgs["result"]["system"]>
 
 export type $SystemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "System"
-  objects: {
-    resources: Prisma.$ResourcePayload<ExtArgs>[]
-  }
+  objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     tenantId: string
@@ -543,7 +395,6 @@ export type $SystemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     deletedAt: Date | null
     type: string
     uniqueIdentifier: string
-    connection: string
   }, ExtArgs["result"]["system"]>
   composites: {}
 }
@@ -938,7 +789,6 @@ readonly fields: SystemFieldRefs;
  */
 export interface Prisma__SystemClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  resources<T extends Prisma.System$resourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.System$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -974,7 +824,6 @@ export interface SystemFieldRefs {
   readonly deletedAt: Prisma.FieldRef<"System", 'DateTime'>
   readonly type: Prisma.FieldRef<"System", 'String'>
   readonly uniqueIdentifier: Prisma.FieldRef<"System", 'String'>
-  readonly connection: Prisma.FieldRef<"System", 'String'>
 }
     
 
@@ -991,10 +840,6 @@ export type SystemFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the System
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
   /**
    * Filter, which System to fetch.
    */
@@ -1014,10 +859,6 @@ export type SystemFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
-  /**
    * Filter, which System to fetch.
    */
   where: Prisma.SystemWhereUniqueInput
@@ -1035,10 +876,6 @@ export type SystemFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the System
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
   /**
    * Filter, which System to fetch.
    */
@@ -1088,10 +925,6 @@ export type SystemFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
-  /**
    * Filter, which System to fetch.
    */
   where?: Prisma.SystemWhereInput
@@ -1139,10 +972,6 @@ export type SystemFindManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the System
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
   /**
    * Filter, which Systems to fetch.
    */
@@ -1192,10 +1021,6 @@ export type SystemCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
-  /**
    * The data needed to create a System.
    */
   data: Prisma.XOR<Prisma.SystemCreateInput, Prisma.SystemUncheckedCreateInput>
@@ -1243,10 +1068,6 @@ export type SystemUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the System
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
   /**
    * The data needed to update a System.
    */
@@ -1314,10 +1135,6 @@ export type SystemUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
-  /**
    * The filter to search for the System to update in case it exists.
    */
   where: Prisma.SystemWhereUniqueInput
@@ -1344,10 +1161,6 @@ export type SystemDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
-  /**
    * Filter which System to delete.
    */
   where: Prisma.SystemWhereUniqueInput
@@ -1368,30 +1181,6 @@ export type SystemDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * System.resources
- */
-export type System$resourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Resource
-   */
-  select?: Prisma.ResourceSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Resource
-   */
-  omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
-  where?: Prisma.ResourceWhereInput
-  orderBy?: Prisma.ResourceOrderByWithRelationInput | Prisma.ResourceOrderByWithRelationInput[]
-  cursor?: Prisma.ResourceWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ResourceScalarFieldEnum | Prisma.ResourceScalarFieldEnum[]
-}
-
-/**
  * System without action
  */
 export type SystemDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1403,8 +1192,4 @@ export type SystemDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the System
    */
   omit?: Prisma.SystemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SystemInclude<ExtArgs> | null
 }

@@ -214,7 +214,6 @@ export type ResourceWhereInput = {
   name?: Prisma.StringFilter<"Resource"> | string
   desc?: Prisma.StringFilter<"Resource"> | string
   systemId?: Prisma.StringFilter<"Resource"> | string
-  system?: Prisma.XOR<Prisma.SystemScalarRelationFilter, Prisma.SystemWhereInput>
 }
 
 export type ResourceOrderByWithRelationInput = {
@@ -227,12 +226,11 @@ export type ResourceOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   desc?: Prisma.SortOrder
   systemId?: Prisma.SortOrder
-  system?: Prisma.SystemOrderByWithRelationInput
 }
 
 export type ResourceWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  tenantId_systemId_nativeUniqueName_deletedAt?: Prisma.ResourceTenantIdSystemIdNativeUniqueNameDeletedAtCompoundUniqueInput
+  tenantId_systemId_nativeUniqueName?: Prisma.ResourceTenantIdSystemIdNativeUniqueNameCompoundUniqueInput
   AND?: Prisma.ResourceWhereInput | Prisma.ResourceWhereInput[]
   OR?: Prisma.ResourceWhereInput[]
   NOT?: Prisma.ResourceWhereInput | Prisma.ResourceWhereInput[]
@@ -244,8 +242,7 @@ export type ResourceWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Resource"> | string
   desc?: Prisma.StringFilter<"Resource"> | string
   systemId?: Prisma.StringFilter<"Resource"> | string
-  system?: Prisma.XOR<Prisma.SystemScalarRelationFilter, Prisma.SystemWhereInput>
-}, "id" | "tenantId_systemId_nativeUniqueName_deletedAt">
+}, "id" | "tenantId_systemId_nativeUniqueName">
 
 export type ResourceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -286,7 +283,7 @@ export type ResourceCreateInput = {
   nativeUniqueName: string
   name: string
   desc: string
-  system: Prisma.SystemCreateNestedOneWithoutResourcesInput
+  systemId: string
 }
 
 export type ResourceUncheckedCreateInput = {
@@ -310,7 +307,7 @@ export type ResourceUpdateInput = {
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   desc?: Prisma.StringFieldUpdateOperationsInput | string
-  system?: Prisma.SystemUpdateOneRequiredWithoutResourcesNestedInput
+  systemId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type ResourceUncheckedUpdateInput = {
@@ -346,6 +343,7 @@ export type ResourceUpdateManyMutationInput = {
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   desc?: Prisma.StringFieldUpdateOperationsInput | string
+  systemId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type ResourceUncheckedUpdateManyInput = {
@@ -360,21 +358,10 @@ export type ResourceUncheckedUpdateManyInput = {
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
-export type ResourceListRelationFilter = {
-  every?: Prisma.ResourceWhereInput
-  some?: Prisma.ResourceWhereInput
-  none?: Prisma.ResourceWhereInput
-}
-
-export type ResourceOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
-export type ResourceTenantIdSystemIdNativeUniqueNameDeletedAtCompoundUniqueInput = {
+export type ResourceTenantIdSystemIdNativeUniqueNameCompoundUniqueInput = {
   tenantId: string
   systemId: string
   nativeUniqueName: string
-  deletedAt: Date | string
 }
 
 export type ResourceCountOrderByAggregateInput = {
@@ -413,155 +400,6 @@ export type ResourceMinOrderByAggregateInput = {
   systemId?: Prisma.SortOrder
 }
 
-export type ResourceCreateNestedManyWithoutSystemInput = {
-  create?: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput> | Prisma.ResourceCreateWithoutSystemInput[] | Prisma.ResourceUncheckedCreateWithoutSystemInput[]
-  connectOrCreate?: Prisma.ResourceCreateOrConnectWithoutSystemInput | Prisma.ResourceCreateOrConnectWithoutSystemInput[]
-  createMany?: Prisma.ResourceCreateManySystemInputEnvelope
-  connect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-}
-
-export type ResourceUncheckedCreateNestedManyWithoutSystemInput = {
-  create?: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput> | Prisma.ResourceCreateWithoutSystemInput[] | Prisma.ResourceUncheckedCreateWithoutSystemInput[]
-  connectOrCreate?: Prisma.ResourceCreateOrConnectWithoutSystemInput | Prisma.ResourceCreateOrConnectWithoutSystemInput[]
-  createMany?: Prisma.ResourceCreateManySystemInputEnvelope
-  connect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-}
-
-export type ResourceUpdateManyWithoutSystemNestedInput = {
-  create?: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput> | Prisma.ResourceCreateWithoutSystemInput[] | Prisma.ResourceUncheckedCreateWithoutSystemInput[]
-  connectOrCreate?: Prisma.ResourceCreateOrConnectWithoutSystemInput | Prisma.ResourceCreateOrConnectWithoutSystemInput[]
-  upsert?: Prisma.ResourceUpsertWithWhereUniqueWithoutSystemInput | Prisma.ResourceUpsertWithWhereUniqueWithoutSystemInput[]
-  createMany?: Prisma.ResourceCreateManySystemInputEnvelope
-  set?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  disconnect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  delete?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  connect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  update?: Prisma.ResourceUpdateWithWhereUniqueWithoutSystemInput | Prisma.ResourceUpdateWithWhereUniqueWithoutSystemInput[]
-  updateMany?: Prisma.ResourceUpdateManyWithWhereWithoutSystemInput | Prisma.ResourceUpdateManyWithWhereWithoutSystemInput[]
-  deleteMany?: Prisma.ResourceScalarWhereInput | Prisma.ResourceScalarWhereInput[]
-}
-
-export type ResourceUncheckedUpdateManyWithoutSystemNestedInput = {
-  create?: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput> | Prisma.ResourceCreateWithoutSystemInput[] | Prisma.ResourceUncheckedCreateWithoutSystemInput[]
-  connectOrCreate?: Prisma.ResourceCreateOrConnectWithoutSystemInput | Prisma.ResourceCreateOrConnectWithoutSystemInput[]
-  upsert?: Prisma.ResourceUpsertWithWhereUniqueWithoutSystemInput | Prisma.ResourceUpsertWithWhereUniqueWithoutSystemInput[]
-  createMany?: Prisma.ResourceCreateManySystemInputEnvelope
-  set?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  disconnect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  delete?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  connect?: Prisma.ResourceWhereUniqueInput | Prisma.ResourceWhereUniqueInput[]
-  update?: Prisma.ResourceUpdateWithWhereUniqueWithoutSystemInput | Prisma.ResourceUpdateWithWhereUniqueWithoutSystemInput[]
-  updateMany?: Prisma.ResourceUpdateManyWithWhereWithoutSystemInput | Prisma.ResourceUpdateManyWithWhereWithoutSystemInput[]
-  deleteMany?: Prisma.ResourceScalarWhereInput | Prisma.ResourceScalarWhereInput[]
-}
-
-export type ResourceCreateWithoutSystemInput = {
-  id: string
-  tenantId: string
-  createdAt?: Date | string
-  deletedAt?: Date | string | null
-  version: string
-  nativeUniqueName: string
-  name: string
-  desc: string
-}
-
-export type ResourceUncheckedCreateWithoutSystemInput = {
-  id: string
-  tenantId: string
-  createdAt?: Date | string
-  deletedAt?: Date | string | null
-  version: string
-  nativeUniqueName: string
-  name: string
-  desc: string
-}
-
-export type ResourceCreateOrConnectWithoutSystemInput = {
-  where: Prisma.ResourceWhereUniqueInput
-  create: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput>
-}
-
-export type ResourceCreateManySystemInputEnvelope = {
-  data: Prisma.ResourceCreateManySystemInput | Prisma.ResourceCreateManySystemInput[]
-  skipDuplicates?: boolean
-}
-
-export type ResourceUpsertWithWhereUniqueWithoutSystemInput = {
-  where: Prisma.ResourceWhereUniqueInput
-  update: Prisma.XOR<Prisma.ResourceUpdateWithoutSystemInput, Prisma.ResourceUncheckedUpdateWithoutSystemInput>
-  create: Prisma.XOR<Prisma.ResourceCreateWithoutSystemInput, Prisma.ResourceUncheckedCreateWithoutSystemInput>
-}
-
-export type ResourceUpdateWithWhereUniqueWithoutSystemInput = {
-  where: Prisma.ResourceWhereUniqueInput
-  data: Prisma.XOR<Prisma.ResourceUpdateWithoutSystemInput, Prisma.ResourceUncheckedUpdateWithoutSystemInput>
-}
-
-export type ResourceUpdateManyWithWhereWithoutSystemInput = {
-  where: Prisma.ResourceScalarWhereInput
-  data: Prisma.XOR<Prisma.ResourceUpdateManyMutationInput, Prisma.ResourceUncheckedUpdateManyWithoutSystemInput>
-}
-
-export type ResourceScalarWhereInput = {
-  AND?: Prisma.ResourceScalarWhereInput | Prisma.ResourceScalarWhereInput[]
-  OR?: Prisma.ResourceScalarWhereInput[]
-  NOT?: Prisma.ResourceScalarWhereInput | Prisma.ResourceScalarWhereInput[]
-  id?: Prisma.StringFilter<"Resource"> | string
-  tenantId?: Prisma.StringFilter<"Resource"> | string
-  createdAt?: Prisma.DateTimeFilter<"Resource"> | Date | string
-  deletedAt?: Prisma.DateTimeNullableFilter<"Resource"> | Date | string | null
-  version?: Prisma.StringFilter<"Resource"> | string
-  nativeUniqueName?: Prisma.StringFilter<"Resource"> | string
-  name?: Prisma.StringFilter<"Resource"> | string
-  desc?: Prisma.StringFilter<"Resource"> | string
-  systemId?: Prisma.StringFilter<"Resource"> | string
-}
-
-export type ResourceCreateManySystemInput = {
-  id: string
-  tenantId: string
-  createdAt?: Date | string
-  deletedAt?: Date | string | null
-  version: string
-  nativeUniqueName: string
-  name: string
-  desc: string
-}
-
-export type ResourceUpdateWithoutSystemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  version?: Prisma.StringFieldUpdateOperationsInput | string
-  nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  desc?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
-export type ResourceUncheckedUpdateWithoutSystemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  version?: Prisma.StringFieldUpdateOperationsInput | string
-  nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  desc?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
-export type ResourceUncheckedUpdateManyWithoutSystemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  version?: Prisma.StringFieldUpdateOperationsInput | string
-  nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  desc?: Prisma.StringFieldUpdateOperationsInput | string
-}
-
 
 
 export type ResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -574,7 +412,6 @@ export type ResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name?: boolean
   desc?: boolean
   systemId?: boolean
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["resource"]>
 
 export type ResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -587,7 +424,6 @@ export type ResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   name?: boolean
   desc?: boolean
   systemId?: boolean
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["resource"]>
 
 export type ResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -600,7 +436,6 @@ export type ResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   name?: boolean
   desc?: boolean
   systemId?: boolean
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["resource"]>
 
 export type ResourceSelectScalar = {
@@ -616,21 +451,10 @@ export type ResourceSelectScalar = {
 }
 
 export type ResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "deletedAt" | "version" | "nativeUniqueName" | "name" | "desc" | "systemId", ExtArgs["result"]["resource"]>
-export type ResourceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
-}
-export type ResourceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
-}
-export type ResourceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  system?: boolean | Prisma.SystemDefaultArgs<ExtArgs>
-}
 
 export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Resource"
-  objects: {
-    system: Prisma.$SystemPayload<ExtArgs>
-  }
+  objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     tenantId: string
@@ -1035,7 +859,6 @@ readonly fields: ResourceFieldRefs;
  */
 export interface Prisma__ResourceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  system<T extends Prisma.SystemDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SystemDefaultArgs<ExtArgs>>): Prisma.Prisma__SystemClient<runtime.Types.Result.GetResult<Prisma.$SystemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1091,10 +914,6 @@ export type ResourceFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
-  /**
    * Filter, which Resource to fetch.
    */
   where: Prisma.ResourceWhereUniqueInput
@@ -1113,10 +932,6 @@ export type ResourceFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
-  /**
    * Filter, which Resource to fetch.
    */
   where: Prisma.ResourceWhereUniqueInput
@@ -1134,10 +949,6 @@ export type ResourceFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
   /**
    * Filter, which Resource to fetch.
    */
@@ -1187,10 +998,6 @@ export type ResourceFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
-  /**
    * Filter, which Resource to fetch.
    */
   where?: Prisma.ResourceWhereInput
@@ -1238,10 +1045,6 @@ export type ResourceFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
   /**
    * Filter, which Resources to fetch.
    */
@@ -1291,10 +1094,6 @@ export type ResourceCreateArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
-  /**
    * The data needed to create a Resource.
    */
   data: Prisma.XOR<Prisma.ResourceCreateInput, Prisma.ResourceUncheckedCreateInput>
@@ -1328,10 +1127,6 @@ export type ResourceCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    */
   data: Prisma.ResourceCreateManyInput | Prisma.ResourceCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1346,10 +1141,6 @@ export type ResourceUpdateArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
   /**
    * The data needed to update a Resource.
    */
@@ -1402,10 +1193,6 @@ export type ResourceUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many Resources to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1420,10 +1207,6 @@ export type ResourceUpsertArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
   /**
    * The filter to search for the Resource to update in case it exists.
    */
@@ -1450,10 +1233,6 @@ export type ResourceDeleteArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
   /**
    * Filter which Resource to delete.
    */
@@ -1486,8 +1265,4 @@ export type ResourceDefaultArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the Resource
    */
   omit?: Prisma.ResourceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ResourceInclude<ExtArgs> | null
 }

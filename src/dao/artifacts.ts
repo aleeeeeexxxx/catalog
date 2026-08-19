@@ -16,7 +16,6 @@ export const enum Source {
 export interface ISystem {
     uniqueIdentifier: string;
     type: string;
-    connection: string;
 }
 
 export interface IStage {

@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["catalog"]
+  schemas  = ["catalog", "stage"]
 
   relationMode = "prisma"
 }
@@ -24,11 +24,10 @@ model System {
 
   type             String @db.VarChar(256)
   uniqueIdentifier String @db.VarChar(256)
-  connection       String
 
-  resources Resource[]
-
-  @@unique([tenantId, uniqueIdentifier, deletedAt])
+  // Prisma does not support partial unique index
+  // manually [add] WHERE "deletedAt" IS NULL
+  @@unique([tenantId, uniqueIdentifier])
   @@schema("catalog")
 }
 
@@ -46,10 +45,10 @@ model Resource {
   desc             String
 
   systemId String
-  system   System @relation(fields: [systemId], references: [id])
 
-  @@unique([tenantId, systemId, nativeUniqueName, deletedAt])
-  @@index([systemId, id])
+  // Prisma does not support partial unique index
+  // manually [add] WHERE "deletedAt" IS NULL
+  @@unique([tenantId, systemId, nativeUniqueName])
   @@schema("catalog")
 }
 
@@ -63,7 +62,7 @@ model Stage {
   nativeUniqueName String @db.VarChar(256)
   version          String @db.VarChar(256)
 
-  @@schema("catalog")
+  @@schema("stage")
 }
 
 model StagedResource {
@@ -72,5 +71,5 @@ model StagedResource {
   name String @db.VarChar(256)
   desc String
 
-  @@schema("catalog")
+  @@schema("stage")
 }
