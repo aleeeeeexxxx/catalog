@@ -2,18 +2,21 @@
  * @author Alex
  */
 
-import { ResourceDatastore, SystemDatastore, TenantDbClient } from '../../src/dao';
+import { ResourceDatastore, SystemDatastore, TenantDbClient, StageDatastore } from '../../src/dao';
 import { getSharedTestContext, getTestTenantDbClient } from '../setup';
 
 const ctx = getSharedTestContext();
 let dbClient: TenantDbClient;
 let resources: ResourceDatastore;
 let systems: SystemDatastore;
+let stage: StageDatastore;
 
 beforeAll(async () => {
     dbClient = await getTestTenantDbClient();
+
     resources = new ResourceDatastore(dbClient);
     systems = new SystemDatastore(dbClient);
+    stage = new StageDatastore(dbClient);
 });
 
 afterAll(async () => {
@@ -67,5 +70,64 @@ describe('SystemDatastore', () => {
         const system = await systems.get(ctx, 'non-existent-id');
 
         expect(system).toBeNull();
+    });
+});
+
+describe('StageDatastore', () => {
+    it('stage', async () => {
+        const resources = [
+            {
+                tenantId: 't1',
+                systemId: 'test-system-id-001',
+                nativeUniqueName: 'stage-resource-001',
+                version: '1.0',
+                resource: {
+                    name: 'Test Resource 1',
+                    description: 'Description for test resource 1',
+                },
+            },
+            {
+                tenantId: 't2',
+                systemId: 'test-system-id-002',
+                nativeUniqueName: 'stage-resource-002',
+                version: '1.1',
+                resource: {
+                    name: 'Test Resource 2',
+                    description: 'Description for test resource 2',
+                },
+            },
+            {
+                tenantId: 't3',
+                systemId: 'test-system-id-003',
+                nativeUniqueName: 'stage-resource-003',
+                version: '2.0',
+                resource: {
+                    name: 'Test Resource 3',
+                    description: 'Description for test resource 3',
+                },
+            },
+            {
+                tenantId: 't4',
+                systemId: 'test-system-id-004',
+                nativeUniqueName: 'stage-resource-004',
+                version: '2.5',
+                resource: {
+                    name: 'Test Resource 4',
+                    description: 'Description for test resource 4',
+                },
+            },
+        ];
+
+        const ids = await stage.stage(ctx, resources);
+        expect(ids).toHaveLength(4);
+
+        const targets = await stage.listStages(ctx, ids[1], 2);
+        expect(targets).toHaveLength(2);
+        expect(targets[0]).toEqual(ids[2]);
+        expect(targets[1]).toEqual(ids[3]);
+
+        await stage.delete(ctx, targets);
+        const deleted = await stage.listStages(ctx, ids[1], 2);
+        expect(deleted).toHaveLength(0);
     });
 });

@@ -52,7 +52,9 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   System: 'System',
-  Resource: 'Resource'
+  Resource: 'Resource',
+  Stage: 'Stage',
+  StagedResource: 'StagedResource'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -97,6 +99,27 @@ export const ResourceScalarFieldEnum = {
 } as const
 
 export type ResourceScalarFieldEnum = (typeof ResourceScalarFieldEnum)[keyof typeof ResourceScalarFieldEnum]
+
+
+export const StageScalarFieldEnum = {
+  id: 'id',
+  stageAt: 'stageAt',
+  tenantId: 'tenantId',
+  systemId: 'systemId',
+  nativeUniqueName: 'nativeUniqueName',
+  version: 'version'
+} as const
+
+export type StageScalarFieldEnum = (typeof StageScalarFieldEnum)[keyof typeof StageScalarFieldEnum]
+
+
+export const StagedResourceScalarFieldEnum = {
+  stageId: 'stageId',
+  name: 'name',
+  desc: 'desc'
+} as const
+
+export type StagedResourceScalarFieldEnum = (typeof StagedResourceScalarFieldEnum)[keyof typeof StagedResourceScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -18,3 +18,17 @@ export interface ISystem {
     type: string;
     connection: string;
 }
+
+export interface IStage {
+    tenantId: string;
+    systemId: string;
+    nativeUniqueName: string;
+    version: string;
+
+    resource: IStageResource;
+}
+
+export interface IStageResource {
+    name: string;
+    description: string;
+}

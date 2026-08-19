@@ -49,3 +49,13 @@ export type System = Prisma.SystemModel
  * 
  */
 export type Resource = Prisma.ResourceModel
+/**
+ * Model Stage
+ * 
+ */
+export type Stage = Prisma.StageModel
+/**
+ * Model StagedResource
+ * 
+ */
+export type StagedResource = Prisma.StagedResourceModel

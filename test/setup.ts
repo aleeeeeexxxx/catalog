@@ -48,6 +48,7 @@ export async function clearTestDb() {
     await db.transaction(ctx, async tx => {
         await tx.resource.deleteMany();
         await tx.system.deleteMany();
+        await tx.stage.deleteMany();
     });
 }
 
