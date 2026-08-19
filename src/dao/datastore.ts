@@ -11,6 +11,8 @@ import { Generate32UUID } from '../utils/uuid';
 
 const logger = getLogger(__filename);
 
+const errorNotExist = new Error('target not exist');
+
 export interface IResourceToUpdate {
     systemUniqueIdentifier: string;
     resource: IResource;
@@ -55,12 +57,12 @@ export class ResourceDatastore {
         );
     }
 
-    async softDelete(ctx: IContext, id: string, tx?: PrismaTx): Promise<boolean> {
+    async softDelete(ctx: IContext, id: string, tx?: PrismaTx) {
         return await this.client.transaction(
             ctx,
             async (tx: PrismaTx) => {
                 try {
-                    const resource = await tx.resource.update({
+                    await tx.resource.update({
                         where: {
                             id,
                             deletedAt: null,
@@ -73,12 +75,10 @@ export class ResourceDatastore {
                         error instanceof Prisma.PrismaClientKnownRequestError &&
                         error.code === 'P2025'
                     ) {
-                        return false;
+                        errorNotExist;
                     }
                     throw error;
                 }
-
-                return true;
             },
             tx
         );
@@ -177,6 +177,33 @@ export class SystemDatastore {
                     },
                 });
                 return created.id;
+            },
+            tx
+        );
+    }
+
+    async softDelete(ctx: IContext, id: string, tx?: PrismaTx) {
+        return await this.client.transaction(
+            ctx,
+            async (tx: PrismaTx) => {
+                try {
+                    await tx.system.update({
+                        where: {
+                            id,
+                            deletedAt: null,
+                        },
+                        data: { deletedAt: new Date() },
+                    });
+                } catch (error) {
+                    // P2025: Record not found
+                    if (
+                        error instanceof Prisma.PrismaClientKnownRequestError &&
+                        error.code === 'P2025'
+                    ) {
+                        throw errorNotExist;
+                    }
+                    throw error;
+                }
             },
             tx
         );

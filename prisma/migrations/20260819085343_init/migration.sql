@@ -50,7 +50,9 @@ CREATE TABLE "stage"."StagedResource" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "System"("tenantId", "uniqueIdentifier");
+CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "System"("tenantId", "uniqueIdentifier")
+ WHERE "deletedAt" IS NULL;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName");
+CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName")
+ WHERE "deletedAt" IS NULL;

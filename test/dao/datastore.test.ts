@@ -44,7 +44,7 @@ describe.skip('ResourceDatastore', () => {
 describe('SystemDatastore', () => {
     const ctx = createNewContext('SystemDatastore');
 
-    it('create and get', async () => {
+    it('curd', async () => {
         const systemId = await systems.create(ctx, {
             uniqueIdentifier: 'test-system-002',
             type: 'BTP',
@@ -56,6 +56,18 @@ describe('SystemDatastore', () => {
         expect(system).toBeDefined();
         expect(system?.uniqueIdentifier).toBe('test-system-002');
         expect(system?.type).toBe('BTP');
+
+        // soft delete
+        await systems.softDelete(ctx, systemId);
+
+        const deleted = await systems.get(ctx, systemId);
+        expect(deleted).toBeNull();
+
+        // recreate
+        await systems.create(ctx, {
+            uniqueIdentifier: 'test-system-002',
+            type: 'BTP',
+        });
     });
 
     it('get non-existent system', async () => {
