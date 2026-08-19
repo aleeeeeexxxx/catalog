@@ -2,12 +2,12 @@
  * @author Alex
  */
 
-import { v4 as uuidv4 } from 'uuid';
 import { IContext } from '../context';
-import { IResource, ISystem, Source } from './artifacts';
+import { IResource, IStage, ISystem, Source } from './artifacts';
 import { TenantDbClient, PrismaTx } from './client';
 import { Prisma } from '../../generated/prisma/client';
 import { getLogger } from '../logger';
+import { Generate32UUID } from '../utils/uuid';
 
 const logger = getLogger(__filename);
 
@@ -119,7 +119,7 @@ export class ResourceDatastore {
                     logger.debug(ctx, `resource does not exist, creating new...`);
                     const created = await tx.resource.create({
                         data: {
-                            id: uuidv4(),
+                            id: Generate32UUID(),
                             systemId: system.id,
                             nativeUniqueName: resource.resource.nativeUniqueName,
                             name: resource.resource.name,
@@ -170,7 +170,7 @@ export class SystemDatastore {
             async (tx: PrismaTx) => {
                 const created = await tx.system.create({
                     data: {
-                        id: uuidv4(),
+                        id: Generate32UUID(),
                         tenantId: ctx.tenantId,
                         uniqueIdentifier: system.uniqueIdentifier,
                         type: system.type,
@@ -209,5 +209,96 @@ export class SystemDatastore {
             },
             tx
         );
+    }
+}
+
+export class StageDatastore {
+    private client: TenantDbClient;
+
+    constructor(client: TenantDbClient) {
+        this.client = client;
+    }
+
+    async stage(ctx: IContext, stagedObjects: IStage[]): Promise<string[]> {
+        const stageIds: string[] = [];
+        const stages: Prisma.StageCreateManyInput[] = [];
+        const stageResources: Prisma.StagedResourceCreateManyInput[] = [];
+
+        stagedObjects.forEach(obj => {
+            const id = Generate32UUID();
+            stageIds.push(id);
+
+            stages.push({
+                id: id,
+                tenantId: obj.tenantId,
+                systemId: obj.systemId,
+                nativeUniqueName: obj.nativeUniqueName,
+                version: obj.version,
+            });
+
+            stageResources.push({
+                stageId: id,
+                name: obj.resource.name,
+                desc: obj.resource.description,
+            });
+        });
+
+        // create items first, in case ingest when items are not staged
+        await this.client.transaction(ctx, async tx => {
+            await tx.stagedResource.createMany({ data: stageResources });
+        });
+
+        await this.client.transaction(ctx, async tx => {
+            await tx.stage.createMany({ data: stages });
+        });
+
+        return stageIds;
+    }
+
+    async listStages(ctx: IContext, startFrom?: string, batch?: number): Promise<string[]> {
+        batch = batch ?? 500;
+
+        return await this.client.transaction(ctx, async tx => {
+            const stages = await tx.stage.findMany({
+                where: {
+                    ...(startFrom && {
+                        id: {
+                            gt: startFrom,
+                        },
+                    }),
+                },
+                select: {
+                    id: true,
+                },
+                orderBy: {
+                    id: 'asc',
+                },
+                take: batch,
+            });
+
+            return stages.map(s => s.id);
+        });
+    }
+
+    async delete(ctx: IContext, stageIds: string[]) {
+        await this.client.transaction(ctx, async tx => {
+            await tx.stage.deleteMany({
+                where: {
+                    id: {
+                        in: stageIds,
+                    },
+                },
+            });
+        });
+
+        await this.client.transaction(ctx, async tx => {
+            await tx.stagedResource.deleteMany({
+                where: {
+                    stageId: {
+                        in: stageIds,
+                    },
+                },
+            });
+        });
     }
 }
