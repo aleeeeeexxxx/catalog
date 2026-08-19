@@ -16,8 +16,8 @@ datasource db {
 }
 
 model System {
-  id       String @id
-  tenantId String // RLS
+  id       String @id @db.VarChar(32)
+  tenantId String @db.VarChar(32) // RLS
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?
@@ -33,8 +33,8 @@ model System {
 }
 
 model Resource {
-  id       String @id
-  tenantId String // RLS
+  id       String @id @db.VarChar(32)
+  tenantId String @db.VarChar(32) // RLS
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?
