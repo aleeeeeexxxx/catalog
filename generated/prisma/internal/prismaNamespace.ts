@@ -398,7 +398,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   System: 'System',
-  Resource: 'Resource'
+  Resource: 'Resource',
+  Stage: 'Stage',
+  StagedResource: 'StagedResource'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -414,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "system" | "resource"
+    modelProps: "system" | "resource" | "stage" | "stagedResource"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -566,6 +568,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Stage: {
+      payload: Prisma.$StagePayload<ExtArgs>
+      fields: Prisma.StageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        findFirst: {
+          args: Prisma.StageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        findMany: {
+          args: Prisma.StageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+        }
+        create: {
+          args: Prisma.StageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        createMany: {
+          args: Prisma.StageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+        }
+        delete: {
+          args: Prisma.StageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        update: {
+          args: Prisma.StageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        deleteMany: {
+          args: Prisma.StageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+        }
+        upsert: {
+          args: Prisma.StageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+        }
+        aggregate: {
+          args: Prisma.StageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStage>
+        }
+        groupBy: {
+          args: Prisma.StageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StageCountAggregateOutputType> | number
+        }
+      }
+    }
+    StagedResource: {
+      payload: Prisma.$StagedResourcePayload<ExtArgs>
+      fields: Prisma.StagedResourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StagedResourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StagedResourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        findFirst: {
+          args: Prisma.StagedResourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StagedResourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        findMany: {
+          args: Prisma.StagedResourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+        }
+        create: {
+          args: Prisma.StagedResourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        createMany: {
+          args: Prisma.StagedResourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StagedResourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+        }
+        delete: {
+          args: Prisma.StagedResourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        update: {
+          args: Prisma.StagedResourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.StagedResourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StagedResourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StagedResourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.StagedResourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+        }
+        aggregate: {
+          args: Prisma.StagedResourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStagedResource>
+        }
+        groupBy: {
+          args: Prisma.StagedResourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedResourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StagedResourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedResourceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -631,6 +781,27 @@ export const ResourceScalarFieldEnum = {
 } as const
 
 export type ResourceScalarFieldEnum = (typeof ResourceScalarFieldEnum)[keyof typeof ResourceScalarFieldEnum]
+
+
+export const StageScalarFieldEnum = {
+  id: 'id',
+  stageAt: 'stageAt',
+  tenantId: 'tenantId',
+  systemId: 'systemId',
+  nativeUniqueName: 'nativeUniqueName',
+  version: 'version'
+} as const
+
+export type StageScalarFieldEnum = (typeof StageScalarFieldEnum)[keyof typeof StageScalarFieldEnum]
+
+
+export const StagedResourceScalarFieldEnum = {
+  stageId: 'stageId',
+  name: 'name',
+  desc: 'desc'
+} as const
+
+export type StagedResourceScalarFieldEnum = (typeof StagedResourceScalarFieldEnum)[keyof typeof StagedResourceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -857,6 +1028,8 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   system?: Prisma.SystemOmit
   resource?: Prisma.ResourceOmit
+  stage?: Prisma.StageOmit
+  stagedResource?: Prisma.StagedResourceOmit
 }
 
 /* Types for Logging */

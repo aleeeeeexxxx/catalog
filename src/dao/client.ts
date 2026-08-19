@@ -15,8 +15,9 @@ export type PrismaTx = Prisma.TransactionClient;
 
 export class TenantDbClient {
     private cfg: IDbConfig;
-    private client: PrismaClient;
+
     private pool: Pool;
+    prisma: PrismaClient;
 
     constructor(cfg: IDbConfig) {
         this.cfg = cfg;
@@ -24,7 +25,7 @@ export class TenantDbClient {
         this.pool = new Pool({ connectionString: getDatabaseUrl(cfg) });
         const adapter = new PrismaPg(this.pool);
 
-        this.client = new PrismaClient({
+        this.prisma = new PrismaClient({
             adapter,
             log: [{ level: 'query', emit: 'event' }],
         });
@@ -32,12 +33,12 @@ export class TenantDbClient {
     }
 
     async connect() {
-        await this.client.$connect();
+        await this.prisma.$connect();
     }
 
     async disconnect() {
         await this.pool.end();
-        await this.client.$disconnect();
+        await this.prisma.$disconnect();
     }
 
     async transaction<T>(
@@ -49,7 +50,7 @@ export class TenantDbClient {
             return await fn(tx);
         }
 
-        return await this.client.$transaction(async tx => {
+        return await this.prisma.$transaction(async tx => {
             // RLS -> tenant isolution
             await tx.$executeRaw`
                 SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)
@@ -60,7 +61,7 @@ export class TenantDbClient {
     }
 
     private initLogger() {
-        this.client.$on('query' as never, (ev: Prisma.QueryEvent) => {
+        this.prisma.$on('query' as never, (ev: Prisma.QueryEvent) => {
             logger.debug(`Query: ${ev.query} | Params: ${ev.params} | Duration: ${ev.duration}ms`);
         });
     }

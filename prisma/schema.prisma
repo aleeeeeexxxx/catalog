@@ -52,3 +52,25 @@ model Resource {
   @@index([systemId, id])
   @@schema("catalog")
 }
+
+model Stage {
+  id String @id @db.VarChar(32)
+
+  stageAt DateTime @default(now())
+
+  tenantId         String @db.VarChar(32)
+  systemId         String @db.VarChar(32)
+  nativeUniqueName String @db.VarChar(256)
+  version          String @db.VarChar(256)
+
+  @@schema("catalog")
+}
+
+model StagedResource {
+  stageId String @id @db.VarChar(32)
+
+  name String @db.VarChar(256)
+  desc String
+
+  @@schema("catalog")
+}
