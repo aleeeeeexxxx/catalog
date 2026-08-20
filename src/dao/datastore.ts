@@ -153,6 +153,57 @@ export class ResourceDatastore {
             tx
         );
     }
+
+    async batchUpsertStage(ctx: IContext, stageIds: string[]) {
+        if (stageIds.length === 0) {
+            return;
+        }
+
+        await this.client.prisma.$executeRaw`
+            WITH staged AS (
+                SELECT
+                    t."id",
+                    t."tenantId",
+                    t."systemId",
+                    t."nativeUniqueName",
+                    t."version",
+                    CASE WHEN t."deletedBy" is NULL THEN tr."name" ELSE r."name"       END AS "name",
+                    CASE WHEN t."deletedBy" is NULL THEN tr."desc" ELSE r."desc"       END AS "desc",
+                    CASE WHEN t."deletedBy" is NULL THEN NULL      ELSE t."deletedBy"  END AS "deletedBy"
+                FROM "stage"."Stage" t
+                INNER JOIN "stage"."StagedResource" tr
+                    ON t."id" = tr."stageId"
+                LEFT JOIN "catalog"."Resource" r
+                    ON r."tenantId" = t."tenantId"
+                        AND r."systemId" = t."systemId"
+                        AND r."nativeUniqueName" = t."nativeUniqueName"
+                WHERE
+                    tr."stageId" IN (${Prisma.join(stageIds)})
+                    AND (
+                            t."version" > r."version"
+                            OR r."version" is NULL
+                        )
+            )
+            INSERT INTO "catalog"."Resource" (
+                "id",
+                "tenantId",
+                "systemId",
+                "nativeUniqueName",
+                "version",
+                "name",
+                "desc",
+                "deletedBy"
+            )
+            SELECT * FROM staged
+            ON CONFLICT ("tenantId", "systemId", "nativeUniqueName") WHERE "deletedAt" IS NULL
+            DO UPDATE SET
+                "version"   = EXCLUDED."version",
+                "name"      = EXCLUDED."name",
+                "desc"      = EXCLUDED."desc",
+                "deletedAt" = CASE WHEN EXCLUDED."deletedBy" is NULL THEN NULL ELSE NOW() END,
+                "deletedBy" = EXCLUDED."deletedBy";
+        `;
+    }
 }
 
 export class SystemDatastore {

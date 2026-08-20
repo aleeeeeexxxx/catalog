@@ -18,7 +18,9 @@ CREATE TABLE "Resource" (
     "id" VARCHAR(32) NOT NULL,
     "tenantId" VARCHAR(32) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdBy" TEXT,
     "deletedAt" TIMESTAMP(3),
+    "deletedBy" TEXT,
     "version" VARCHAR(256) NOT NULL,
     "nativeUniqueName" VARCHAR(256) NOT NULL,
     "name" VARCHAR(256) NOT NULL,
@@ -36,6 +38,7 @@ CREATE TABLE "stage"."Stage" (
     "systemId" VARCHAR(32) NOT NULL,
     "nativeUniqueName" VARCHAR(256) NOT NULL,
     "version" VARCHAR(256) NOT NULL,
+    "deletedBy" TEXT,
 
     CONSTRAINT "Stage_pkey" PRIMARY KEY ("id")
 );
@@ -50,7 +53,9 @@ CREATE TABLE "stage"."StagedResource" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "System"("tenantId", "uniqueIdentifier");
+CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "System"("tenantId", "uniqueIdentifier")
+WHERE "deletedAt" IS NULL;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName");
+CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName")
+WHERE "deletedAt" IS NULL;
