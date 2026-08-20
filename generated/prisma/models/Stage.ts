@@ -31,6 +31,7 @@ export type StageMinAggregateOutputType = {
   systemId: string | null
   nativeUniqueName: string | null
   version: string | null
+  deletedBy: string | null
 }
 
 export type StageMaxAggregateOutputType = {
@@ -40,6 +41,7 @@ export type StageMaxAggregateOutputType = {
   systemId: string | null
   nativeUniqueName: string | null
   version: string | null
+  deletedBy: string | null
 }
 
 export type StageCountAggregateOutputType = {
@@ -49,6 +51,7 @@ export type StageCountAggregateOutputType = {
   systemId: number
   nativeUniqueName: number
   version: number
+  deletedBy: number
   _all: number
 }
 
@@ -60,6 +63,7 @@ export type StageMinAggregateInputType = {
   systemId?: true
   nativeUniqueName?: true
   version?: true
+  deletedBy?: true
 }
 
 export type StageMaxAggregateInputType = {
@@ -69,6 +73,7 @@ export type StageMaxAggregateInputType = {
   systemId?: true
   nativeUniqueName?: true
   version?: true
+  deletedBy?: true
 }
 
 export type StageCountAggregateInputType = {
@@ -78,6 +83,7 @@ export type StageCountAggregateInputType = {
   systemId?: true
   nativeUniqueName?: true
   version?: true
+  deletedBy?: true
   _all?: true
 }
 
@@ -160,6 +166,7 @@ export type StageGroupByOutputType = {
   systemId: string
   nativeUniqueName: string
   version: string
+  deletedBy: string | null
   _count: StageCountAggregateOutputType | null
   _min: StageMinAggregateOutputType | null
   _max: StageMaxAggregateOutputType | null
@@ -190,6 +197,7 @@ export type StageWhereInput = {
   systemId?: Prisma.StringFilter<"Stage"> | string
   nativeUniqueName?: Prisma.StringFilter<"Stage"> | string
   version?: Prisma.StringFilter<"Stage"> | string
+  deletedBy?: Prisma.StringNullableFilter<"Stage"> | string | null
 }
 
 export type StageOrderByWithRelationInput = {
@@ -199,6 +207,7 @@ export type StageOrderByWithRelationInput = {
   systemId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type StageWhereUniqueInput = Prisma.AtLeast<{
@@ -211,6 +220,7 @@ export type StageWhereUniqueInput = Prisma.AtLeast<{
   systemId?: Prisma.StringFilter<"Stage"> | string
   nativeUniqueName?: Prisma.StringFilter<"Stage"> | string
   version?: Prisma.StringFilter<"Stage"> | string
+  deletedBy?: Prisma.StringNullableFilter<"Stage"> | string | null
 }, "id">
 
 export type StageOrderByWithAggregationInput = {
@@ -220,6 +230,7 @@ export type StageOrderByWithAggregationInput = {
   systemId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StageCountOrderByAggregateInput
   _max?: Prisma.StageMaxOrderByAggregateInput
   _min?: Prisma.StageMinOrderByAggregateInput
@@ -235,6 +246,7 @@ export type StageScalarWhereWithAggregatesInput = {
   systemId?: Prisma.StringWithAggregatesFilter<"Stage"> | string
   nativeUniqueName?: Prisma.StringWithAggregatesFilter<"Stage"> | string
   version?: Prisma.StringWithAggregatesFilter<"Stage"> | string
+  deletedBy?: Prisma.StringNullableWithAggregatesFilter<"Stage"> | string | null
 }
 
 export type StageCreateInput = {
@@ -244,6 +256,7 @@ export type StageCreateInput = {
   systemId: string
   nativeUniqueName: string
   version: string
+  deletedBy?: string | null
 }
 
 export type StageUncheckedCreateInput = {
@@ -253,6 +266,7 @@ export type StageUncheckedCreateInput = {
   systemId: string
   nativeUniqueName: string
   version: string
+  deletedBy?: string | null
 }
 
 export type StageUpdateInput = {
@@ -262,6 +276,7 @@ export type StageUpdateInput = {
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StageUncheckedUpdateInput = {
@@ -271,6 +286,7 @@ export type StageUncheckedUpdateInput = {
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StageCreateManyInput = {
@@ -280,6 +296,7 @@ export type StageCreateManyInput = {
   systemId: string
   nativeUniqueName: string
   version: string
+  deletedBy?: string | null
 }
 
 export type StageUpdateManyMutationInput = {
@@ -289,6 +306,7 @@ export type StageUpdateManyMutationInput = {
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StageUncheckedUpdateManyInput = {
@@ -298,6 +316,7 @@ export type StageUncheckedUpdateManyInput = {
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type StageCountOrderByAggregateInput = {
@@ -307,6 +326,7 @@ export type StageCountOrderByAggregateInput = {
   systemId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
 }
 
 export type StageMaxOrderByAggregateInput = {
@@ -316,6 +336,7 @@ export type StageMaxOrderByAggregateInput = {
   systemId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
 }
 
 export type StageMinOrderByAggregateInput = {
@@ -325,6 +346,7 @@ export type StageMinOrderByAggregateInput = {
   systemId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
 }
 
 
@@ -336,6 +358,7 @@ export type StageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   systemId?: boolean
   nativeUniqueName?: boolean
   version?: boolean
+  deletedBy?: boolean
 }, ExtArgs["result"]["stage"]>
 
 export type StageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -345,6 +368,7 @@ export type StageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   systemId?: boolean
   nativeUniqueName?: boolean
   version?: boolean
+  deletedBy?: boolean
 }, ExtArgs["result"]["stage"]>
 
 export type StageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -354,6 +378,7 @@ export type StageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   systemId?: boolean
   nativeUniqueName?: boolean
   version?: boolean
+  deletedBy?: boolean
 }, ExtArgs["result"]["stage"]>
 
 export type StageSelectScalar = {
@@ -363,9 +388,10 @@ export type StageSelectScalar = {
   systemId?: boolean
   nativeUniqueName?: boolean
   version?: boolean
+  deletedBy?: boolean
 }
 
-export type StageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "stageAt" | "tenantId" | "systemId" | "nativeUniqueName" | "version", ExtArgs["result"]["stage"]>
+export type StageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "stageAt" | "tenantId" | "systemId" | "nativeUniqueName" | "version" | "deletedBy", ExtArgs["result"]["stage"]>
 
 export type $StagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Stage"
@@ -377,6 +403,7 @@ export type $StagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     systemId: string
     nativeUniqueName: string
     version: string
+    deletedBy: string | null
   }, ExtArgs["result"]["stage"]>
   composites: {}
 }
@@ -806,6 +833,7 @@ export interface StageFieldRefs {
   readonly systemId: Prisma.FieldRef<"Stage", 'String'>
   readonly nativeUniqueName: Prisma.FieldRef<"Stage", 'String'>
   readonly version: Prisma.FieldRef<"Stage", 'String'>
+  readonly deletedBy: Prisma.FieldRef<"Stage", 'String'>
 }
     
 

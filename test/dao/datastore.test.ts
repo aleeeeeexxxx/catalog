@@ -2,8 +2,18 @@
  * @author Alex
  */
 
+import { Prisma } from '../../generated/prisma/client';
 import { createNewContext } from '../../src/context';
-import { ResourceDatastore, SystemDatastore, DbClient, StageDatastore } from '../../src/dao';
+import {
+    ResourceDatastore,
+    SystemDatastore,
+    DbClient,
+    StageDatastore,
+    IResourceToUpdate,
+    IStageResource,
+    IStage,
+    IResource,
+} from '../../src/dao';
 import { getTestDbClient } from '../setup';
 
 let dbClient: DbClient;
@@ -23,12 +33,12 @@ afterAll(async () => {
     await dbClient.disconnect();
 });
 
-describe.skip('ResourceDatastore', () => {
+describe('ResourceDatastore', () => {
     const ctx = createNewContext('ResourceDatastore');
 
     it('createOrUpdateResource', async () => {
         const result = await resources.createOrUpdateResource(ctx, {
-            systemUniqueIdentifier: 'test-system-001',
+            systemUniqueIdentifier: 'system-not-exist',
             resource: {
                 nativeUniqueName: 'createOrUpdateResource',
                 name: 'name',
@@ -37,7 +47,7 @@ describe.skip('ResourceDatastore', () => {
             },
         });
 
-        expect(result.id).toBeDefined();
+        expect(result.id).toBeUndefined();
     });
 });
 
@@ -151,5 +161,242 @@ describe('StageDatastore', () => {
         await stage.delete(ctx, targets);
         const deleted = await stage.listStages(ctx, ids[1], 2);
         expect(deleted).toHaveLength(0);
+    });
+});
+
+describe('Ingest', () => {
+    const ctx = createNewContext('Ingest-ResourceDatastore');
+
+    it('ingest when resource not exist', async () => {
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-1',
+                version: '1',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-not-exist',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-1',
+                name: 'old',
+                desc: 'old',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-1']);
+
+        const rets = await dbClient.prisma.resource.findMany({
+            where: {
+                nativeUniqueName: {
+                    equals: 'ingest-not-exist',
+                },
+                deletedAt: null,
+            },
+        });
+        expect(rets).toHaveLength(1);
+
+        expect(rets[0].id).toEqual('stage-1');
+        expect(rets[0].name).toEqual('old');
+        expect(rets[0].desc).toEqual('old');
+        expect(rets[0].version).toEqual('1');
+        expect(rets[0].tenantId).toEqual('Ingest-ResourceDatastore');
+        expect(rets[0].systemId).toEqual('system');
+        expect(rets[0].nativeUniqueName).toEqual('ingest-not-exist');
+    });
+
+    it('ingest when stage ahead', async () => {
+        await dbClient.prisma.resource.create({
+            data: {
+                id: 'ingest-ahead',
+                version: '1',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-ahead',
+                name: '',
+                desc: 'old',
+            },
+        });
+
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-2',
+                version: '3',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-ahead',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-2',
+                name: '',
+                desc: 'new',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-2']);
+
+        const ret = await resources.getResource(ctx, 'ingest-ahead');
+        expect(ret).toBeDefined();
+        expect(ret?.description).toEqual('new');
+    });
+
+    it('do not ingest when stage outdate', async () => {
+        await dbClient.prisma.resource.create({
+            data: {
+                id: 'ingest-outdate',
+                version: '9',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-outdate',
+                name: '',
+                desc: 'old',
+            },
+        });
+
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-3',
+                version: '3',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-outdate',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-3',
+                name: '',
+                desc: 'new',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-3']);
+
+        const ret = await resources.getResource(ctx, 'ingest-outdate');
+        expect(ret).toBeDefined();
+        expect(ret?.description).toEqual('old');
+    });
+
+    it('ingest when resource is deleted and stage is ahead', async () => {
+        await dbClient.prisma.resource.create({
+            data: {
+                id: 'ingest-deleted',
+                version: '1',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-deleted',
+                name: '',
+                desc: 'old',
+                deletedAt: new Date(),
+            },
+        });
+
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-4',
+                version: '3',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-deleted',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-4',
+                name: '',
+                desc: 'new',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-4']);
+
+        const old = await resources.getResource(ctx, 'ingest-deleted');
+        expect(old).toBeNull();
+
+        const ret = await resources.getResource(ctx, 'stage-4');
+        expect(ret?.description).toEqual('new');
+    });
+
+    it('do not ingest when resource is deleted and stage is outdate', async () => {
+        await dbClient.prisma.resource.create({
+            data: {
+                id: 'ingest-deleted-outdate',
+                version: '9',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-deleted-outdate',
+                name: '',
+                desc: 'old',
+                deletedAt: new Date(),
+            },
+        });
+
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-5',
+                version: '3',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-deleted-outdate',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-5',
+                name: '',
+                desc: 'new',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-5']);
+
+        const old = await resources.getResource(ctx, 'ingest-deleted-outdate');
+        expect(old).toBeNull();
+
+        const ret = await resources.getResource(ctx, 'stage-5');
+        expect(ret).toBeNull();
+    });
+
+    it('ingest when delete', async () => {
+        await dbClient.prisma.resource.create({
+            data: {
+                id: 'ingest-when-deleted',
+                version: '1',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-when-deleted',
+                name: '',
+                desc: 'old',
+            },
+        });
+
+        await dbClient.prisma.stage.create({
+            data: {
+                id: 'stage-6',
+                version: '3',
+                tenantId: 'Ingest-ResourceDatastore',
+                systemId: 'system',
+                nativeUniqueName: 'ingest-when-deleted',
+                deletedBy: 'Auto',
+            },
+        });
+        await dbClient.prisma.stagedResource.create({
+            data: {
+                stageId: 'stage-6',
+                name: '',
+                desc: 'new',
+            },
+        });
+
+        await resources.batchUpsertStage(ctx, ['stage-6']);
+
+        const old = await resources.getResource(ctx, 'ingest-when-deleted');
+        expect(old).toBeNull();
+
+        const ret = await resources.getResource(ctx, 'stage-6');
+        expect(ret).toBeNull();
     });
 });

@@ -36,7 +36,9 @@ model Resource {
   tenantId String @db.VarChar(32) // RLS
 
   createdAt DateTime  @default(now())
+  createdBy String?
   deletedAt DateTime?
+  deletedBy String?
 
   version String @db.VarChar(256)
 
@@ -61,6 +63,8 @@ model Stage {
   systemId         String @db.VarChar(32)
   nativeUniqueName String @db.VarChar(256)
   version          String @db.VarChar(256)
+
+  deletedBy String?
 
   @@schema("stage")
 }

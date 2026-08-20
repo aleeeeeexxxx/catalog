@@ -89,7 +89,9 @@ export const ResourceScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
   createdAt: 'createdAt',
+  createdBy: 'createdBy',
   deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
   version: 'version',
   nativeUniqueName: 'nativeUniqueName',
   name: 'name',
@@ -106,7 +108,8 @@ export const StageScalarFieldEnum = {
   tenantId: 'tenantId',
   systemId: 'systemId',
   nativeUniqueName: 'nativeUniqueName',
-  version: 'version'
+  version: 'version',
+  deletedBy: 'deletedBy'
 } as const
 
 export type StageScalarFieldEnum = (typeof StageScalarFieldEnum)[keyof typeof StageScalarFieldEnum]

@@ -42,6 +42,7 @@ export async function clearTestDb() {
         await tx.resource.deleteMany();
         await tx.system.deleteMany();
         await tx.stage.deleteMany();
+        await tx.stagedResource.deleteMany();
     });
 }
 

@@ -28,7 +28,9 @@ export type ResourceMinAggregateOutputType = {
   id: string | null
   tenantId: string | null
   createdAt: Date | null
+  createdBy: string | null
   deletedAt: Date | null
+  deletedBy: string | null
   version: string | null
   nativeUniqueName: string | null
   name: string | null
@@ -40,7 +42,9 @@ export type ResourceMaxAggregateOutputType = {
   id: string | null
   tenantId: string | null
   createdAt: Date | null
+  createdBy: string | null
   deletedAt: Date | null
+  deletedBy: string | null
   version: string | null
   nativeUniqueName: string | null
   name: string | null
@@ -52,7 +56,9 @@ export type ResourceCountAggregateOutputType = {
   id: number
   tenantId: number
   createdAt: number
+  createdBy: number
   deletedAt: number
+  deletedBy: number
   version: number
   nativeUniqueName: number
   name: number
@@ -66,7 +72,9 @@ export type ResourceMinAggregateInputType = {
   id?: true
   tenantId?: true
   createdAt?: true
+  createdBy?: true
   deletedAt?: true
+  deletedBy?: true
   version?: true
   nativeUniqueName?: true
   name?: true
@@ -78,7 +86,9 @@ export type ResourceMaxAggregateInputType = {
   id?: true
   tenantId?: true
   createdAt?: true
+  createdBy?: true
   deletedAt?: true
+  deletedBy?: true
   version?: true
   nativeUniqueName?: true
   name?: true
@@ -90,7 +100,9 @@ export type ResourceCountAggregateInputType = {
   id?: true
   tenantId?: true
   createdAt?: true
+  createdBy?: true
   deletedAt?: true
+  deletedBy?: true
   version?: true
   nativeUniqueName?: true
   name?: true
@@ -175,7 +187,9 @@ export type ResourceGroupByOutputType = {
   id: string
   tenantId: string
   createdAt: Date
+  createdBy: string | null
   deletedAt: Date | null
+  deletedBy: string | null
   version: string
   nativeUniqueName: string
   name: string
@@ -208,7 +222,9 @@ export type ResourceWhereInput = {
   id?: Prisma.StringFilter<"Resource"> | string
   tenantId?: Prisma.StringFilter<"Resource"> | string
   createdAt?: Prisma.DateTimeFilter<"Resource"> | Date | string
+  createdBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Resource"> | Date | string | null
+  deletedBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   version?: Prisma.StringFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringFilter<"Resource"> | string
   name?: Prisma.StringFilter<"Resource"> | string
@@ -220,7 +236,9 @@ export type ResourceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   version?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -236,7 +254,9 @@ export type ResourceWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ResourceWhereInput | Prisma.ResourceWhereInput[]
   tenantId?: Prisma.StringFilter<"Resource"> | string
   createdAt?: Prisma.DateTimeFilter<"Resource"> | Date | string
+  createdBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Resource"> | Date | string | null
+  deletedBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   version?: Prisma.StringFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringFilter<"Resource"> | string
   name?: Prisma.StringFilter<"Resource"> | string
@@ -248,7 +268,9 @@ export type ResourceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   version?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -266,7 +288,9 @@ export type ResourceScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   tenantId?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Resource"> | Date | string
+  createdBy?: Prisma.StringNullableWithAggregatesFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Resource"> | Date | string | null
+  deletedBy?: Prisma.StringNullableWithAggregatesFilter<"Resource"> | string | null
   version?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   name?: Prisma.StringWithAggregatesFilter<"Resource"> | string
@@ -278,7 +302,9 @@ export type ResourceCreateInput = {
   id: string
   tenantId: string
   createdAt?: Date | string
+  createdBy?: string | null
   deletedAt?: Date | string | null
+  deletedBy?: string | null
   version: string
   nativeUniqueName: string
   name: string
@@ -290,7 +316,9 @@ export type ResourceUncheckedCreateInput = {
   id: string
   tenantId: string
   createdAt?: Date | string
+  createdBy?: string | null
   deletedAt?: Date | string | null
+  deletedBy?: string | null
   version: string
   nativeUniqueName: string
   name: string
@@ -302,7 +330,9 @@ export type ResourceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   version?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -314,7 +344,9 @@ export type ResourceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   version?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -326,7 +358,9 @@ export type ResourceCreateManyInput = {
   id: string
   tenantId: string
   createdAt?: Date | string
+  createdBy?: string | null
   deletedAt?: Date | string | null
+  deletedBy?: string | null
   version: string
   nativeUniqueName: string
   name: string
@@ -338,7 +372,9 @@ export type ResourceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   version?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -350,7 +386,9 @@ export type ResourceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   version?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -368,7 +406,9 @@ export type ResourceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
   version?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -380,7 +420,9 @@ export type ResourceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
   version?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -392,12 +434,18 @@ export type ResourceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  deletedBy?: Prisma.SortOrder
   version?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
   name?: Prisma.SortOrder
   desc?: Prisma.SortOrder
   systemId?: Prisma.SortOrder
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 
@@ -406,7 +454,9 @@ export type ResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   tenantId?: boolean
   createdAt?: boolean
+  createdBy?: boolean
   deletedAt?: boolean
+  deletedBy?: boolean
   version?: boolean
   nativeUniqueName?: boolean
   name?: boolean
@@ -418,7 +468,9 @@ export type ResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   tenantId?: boolean
   createdAt?: boolean
+  createdBy?: boolean
   deletedAt?: boolean
+  deletedBy?: boolean
   version?: boolean
   nativeUniqueName?: boolean
   name?: boolean
@@ -430,7 +482,9 @@ export type ResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   tenantId?: boolean
   createdAt?: boolean
+  createdBy?: boolean
   deletedAt?: boolean
+  deletedBy?: boolean
   version?: boolean
   nativeUniqueName?: boolean
   name?: boolean
@@ -442,7 +496,9 @@ export type ResourceSelectScalar = {
   id?: boolean
   tenantId?: boolean
   createdAt?: boolean
+  createdBy?: boolean
   deletedAt?: boolean
+  deletedBy?: boolean
   version?: boolean
   nativeUniqueName?: boolean
   name?: boolean
@@ -450,7 +506,7 @@ export type ResourceSelectScalar = {
   systemId?: boolean
 }
 
-export type ResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "deletedAt" | "version" | "nativeUniqueName" | "name" | "desc" | "systemId", ExtArgs["result"]["resource"]>
+export type ResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "createdBy" | "deletedAt" | "deletedBy" | "version" | "nativeUniqueName" | "name" | "desc" | "systemId", ExtArgs["result"]["resource"]>
 
 export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Resource"
@@ -459,7 +515,9 @@ export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: string
     tenantId: string
     createdAt: Date
+    createdBy: string | null
     deletedAt: Date | null
+    deletedBy: string | null
     version: string
     nativeUniqueName: string
     name: string
@@ -891,7 +949,9 @@ export interface ResourceFieldRefs {
   readonly id: Prisma.FieldRef<"Resource", 'String'>
   readonly tenantId: Prisma.FieldRef<"Resource", 'String'>
   readonly createdAt: Prisma.FieldRef<"Resource", 'DateTime'>
+  readonly createdBy: Prisma.FieldRef<"Resource", 'String'>
   readonly deletedAt: Prisma.FieldRef<"Resource", 'DateTime'>
+  readonly deletedBy: Prisma.FieldRef<"Resource", 'String'>
   readonly version: Prisma.FieldRef<"Resource", 'String'>
   readonly nativeUniqueName: Prisma.FieldRef<"Resource", 'String'>
   readonly name: Prisma.FieldRef<"Resource", 'String'>
