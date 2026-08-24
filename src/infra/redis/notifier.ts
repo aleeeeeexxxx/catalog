@@ -1,5 +1,6 @@
 import { RedisClient } from './client';
 import { Job, Queue, Worker } from 'bullmq';
+import { logger } from '../log';
 
 export type NotifierCallback = () => Promise<void>;
 
@@ -29,10 +30,12 @@ export class CountAndTimerBasedNotifier {
 
     async close() {
         try {
+            logger.info('Closing CountAndTimerBasedNotifier');
             await this.queue.close();
             await this.worker.close();
+            logger.info('CountAndTimerBasedNotifier closed successfully');
         } catch (err) {
-            // todo: log
+            logger.error({ err }, 'Failed to close CountAndTimerBasedNotifier');
         }
     }
 
@@ -64,6 +67,7 @@ end
 return {kick, uuid}
 `;
         n = n ?? 1;
+        logger.debug({ key, n, max: this.max }, 'Adding to counter');
         const [kick, uniqueId] = (await this.redis.eval(
             LUA_SCRIPT,
             2,
@@ -72,6 +76,8 @@ return {kick, uuid}
             n,
             this.max
         )) as [number, string];
+
+        logger.debug({ key, kick, uniqueId }, 'Counter add result');
 
         for (let i = 0; i < kick; i++) {
             void this.runCallback();
@@ -85,14 +91,16 @@ return {kick, uuid}
     private async createDelayJob(counter: ICounterStatus) {
         try {
             const delay = this.delay * 1000;
+            logger.debug({ counter, delay }, 'Creating delay job');
             await this.queue.add('timeout', counter, { delay });
         } catch (err) {
-            // todo: log
+            logger.error({ err, counter }, 'Failed to create delay job');
         }
     }
 
     private async handleDelayJob(job: Job) {
         const status = job.data as ICounterStatus;
+        logger.debug({ status }, 'Handling delay job');
 
         const LUA_SCRIPT = `
 local cnt_key = KEYS[1]
@@ -118,17 +126,21 @@ end
         );
 
         if (outdated) {
+            logger.debug({ status }, 'Delay job is outdated, skipping');
             return;
         }
 
+        logger.debug({ status }, 'Delay job triggered, running callback');
         void this.runCallback();
     }
 
     private async runCallback() {
         try {
+            logger.debug('Running notifier callback');
             await this.callback();
+            logger.debug('Notifier callback completed');
         } catch (err) {
-            // todo: log
+            logger.error({ err }, 'Notifier callback failed');
         }
     }
 
