@@ -2,12 +2,12 @@
  * @author Alex
  */
 
-import { IContext } from '../context';
+import { IContext } from '../../context';
 import { IResource, IStage, ISystem, Source } from './artifacts';
 import { DbClient, PrismaTx } from './client';
-import { Prisma } from '../../generated/prisma/client';
-import { getLogger } from '../logger';
-import { Generate32UUID } from '../utils/uuid';
+import { Prisma } from '../../../generated/prisma/client';
+import { getLogger } from '../../logger';
+import { Generate32UUID } from '../../utils/uuid';
 
 const logger = getLogger(__filename);
 

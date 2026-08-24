@@ -2,18 +2,13 @@
  * @author Alex
  */
 
-import { Prisma } from '../../generated/prisma/client';
 import { createNewContext } from '../../src/context';
 import {
     ResourceDatastore,
     SystemDatastore,
     DbClient,
     StageDatastore,
-    IResourceToUpdate,
-    IStageResource,
-    IStage,
-    IResource,
-} from '../../src/dao';
+} from '../../src/infra/prisma';
 import { getTestDbClient } from '../setup';
 
 let dbClient: DbClient;

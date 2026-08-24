@@ -1,20 +1,27 @@
+import Redis from 'ioredis';
 import { IContext } from '../context';
-import { ResourceDatastore, StageDatastore } from '../dao';
+import { IStage, ResourceDatastore, StageDatastore } from '../infra/prisma';
 import { getLogger } from '../logger';
 
 const logger = getLogger(__filename);
 
 export class Ingest {
-    private stage: StageDatastore;
+    private stageStore: StageDatastore;
     private resource: ResourceDatastore;
+    private redis: Redis;
 
-    constructor(resource: ResourceDatastore, stage: StageDatastore) {
-        this.stage = stage;
+    constructor(resource: ResourceDatastore, stage: StageDatastore, redis: Redis) {
+        this.stageStore = stage;
         this.resource = resource;
+        this.redis = redis;
+    }
+
+    async stage(ctx: IContext, objects: IStage[]) {
+        await this.stageStore.stage(ctx, objects);
     }
 
     async flush(ctx: IContext, stageIds: string[]) {
         await this.resource.batchUpsertStage(ctx, stageIds);
-        await this.stage.delete(ctx, stageIds);
+        await this.stageStore.delete(ctx, stageIds);
     }
 }

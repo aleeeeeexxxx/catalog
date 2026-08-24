@@ -1,9 +1,10 @@
-import { DbClient } from '../src/dao/client';
-import { IDbConfig } from '../src/dao/config';
+import { DbClient } from '../src/infra/prisma/client';
+import { IDbConfig } from '../src/infra/prisma/config';
+import { IRedisConfig } from '../src/infra/redis/client';
 import { Once } from '../src/utils/once';
 import { getLogger } from '../src/logger';
-import { createNewContext, IContext } from '../src/context';
-import { v4 as uuidv4 } from 'uuid';
+import { createNewContext } from '../src/context';
+import { RedisClient } from '../src/infra';
 
 const logger = getLogger(__filename);
 
@@ -46,8 +47,37 @@ export async function clearTestDb() {
     });
 }
 
-const once = new Once<DbClient>();
+const dbClient = new Once<DbClient>();
 
 export async function getTestDbClient(): Promise<DbClient> {
-    return await once.do(createTestDbClient);
+    return await dbClient.do(createTestDbClient);
+}
+
+function loadDevRedisConfig(): IRedisConfig {
+    const config = require('../dev/redis.config.json');
+    return {
+        host: config.host,
+        port: parseInt(config.port, 10),
+        password: config.password,
+        db: config.db,
+        keyPrefix: config.keyPrefix,
+    };
+}
+
+async function createTestRedisClient(): Promise<RedisClient> {
+    logger.info('Creating test Redis client');
+
+    const cfg = loadDevRedisConfig();
+    logger.info(`Loaded Redis config: ${cfg.host}:${cfg.port}/${cfg.db ?? 0}`);
+
+    const client = RedisClient.New(cfg);
+
+    logger.info('Test Redis client created successfully');
+    return client;
+}
+
+const redis = new Once<RedisClient>();
+
+export async function getRedisClient(): Promise<RedisClient> {
+    return await redis.do(createTestRedisClient);
 }
