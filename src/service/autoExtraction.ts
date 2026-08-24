@@ -3,7 +3,7 @@
  */
 
 import { IContext } from '../context';
-import { ResourceDatastore, IResourceToUpdate, Source } from '../dao';
+import { ResourceDatastore, IResourceToUpdate, Source } from '../infra/prisma';
 import { getLogger } from '../logger';
 
 const logger = getLogger(__filename);

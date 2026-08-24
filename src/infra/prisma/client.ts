@@ -2,12 +2,12 @@
  * @author Alex
  */
 
-import { Prisma, PrismaClient } from '../../generated/prisma/client';
+import { Prisma, PrismaClient } from '../../../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { getDatabaseUrl, IDbConfig } from './config';
-import { IContext } from '../context';
-import { getLogger } from '../logger';
+import { IContext } from '../../context';
+import { getLogger } from '../../logger';
 
 const logger = getLogger(__filename);
 
