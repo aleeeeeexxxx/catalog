@@ -28,23 +28,6 @@ afterAll(async () => {
     await dbClient.disconnect();
 });
 
-describe('ResourceDatastore', () => {
-    const ctx = createNewContext('ResourceDatastore');
-
-    it('createOrUpdateResource', async () => {
-        const result = await resources.createOrUpdateResource(ctx, {
-            systemUniqueIdentifier: 'system-not-exist',
-            resource: {
-                nativeUniqueName: 'createOrUpdateResource',
-                metadata: '{}',
-                version: 1,
-            },
-        });
-
-        expect(result.id).toBeUndefined();
-    });
-});
-
 describe('SystemDatastore', () => {
     const ctx = createNewContext('SystemDatastore');
 

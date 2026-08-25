@@ -6,7 +6,6 @@ import {
     ResourceDatastore,
     StageDatastore,
     SystemDatastore,
-    VERSION_REFERENCED_ONLY,
 } from '../infra/prisma';
 import { getLogger } from '../logger';
 import { Prisma } from '../../generated/prisma/client';
@@ -14,7 +13,7 @@ import { Generate32UUID } from '../utils/uuid';
 
 const logger = getLogger(__filename);
 
-export class Ingest {
+export class IngestService {
     private stageStore: StageDatastore;
     private resourceStore: ResourceDatastore;
     private systemStore: SystemDatastore;
@@ -74,7 +73,7 @@ export class Ingest {
                 uniqueIdentifier: obj.system.uniqueIdentifier,
             });
 
-            obj.parents.forEach(parent => {
+            obj.parents?.forEach(parent => {
                 const parentId = Generate32UUID();
 
                 resources.push({
@@ -82,7 +81,7 @@ export class Ingest {
                     stageId,
                     tenantId: obj.tenantId,
                     nativeUniqueName: parent.nativeUniqueName,
-                    version: VERSION_REFERENCED_ONLY,
+                    version: parent.version,
                     metadata: JSON.stringify(parent.metadata),
                     systemType: parent.system.type,
                     systemTypeUniqueId: parent.system.uniqueIdentifier,
@@ -105,7 +104,7 @@ export class Ingest {
                 });
             });
 
-            obj.children.forEach(child => {
+            obj.children?.forEach(child => {
                 const childId = Generate32UUID();
 
                 resources.push({
@@ -113,7 +112,7 @@ export class Ingest {
                     stageId,
                     tenantId: obj.tenantId,
                     nativeUniqueName: child.nativeUniqueName,
-                    version: VERSION_REFERENCED_ONLY,
+                    version: child.version,
                     metadata: JSON.stringify(child.metadata),
                     systemType: child.system.type,
                     systemTypeUniqueId: child.system.uniqueIdentifier,
