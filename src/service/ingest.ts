@@ -61,7 +61,7 @@ export class Ingest {
                 tenantId: obj.tenantId,
                 nativeUniqueName: obj.nativeUniqueName,
                 version: obj.version,
-                metadata: obj.metadata,
+                metadata: JSON.stringify(obj.metadata),
                 systemType: obj.system.type,
                 systemTypeUniqueId: obj.system.uniqueIdentifier,
             });
@@ -83,7 +83,7 @@ export class Ingest {
                     tenantId: obj.tenantId,
                     nativeUniqueName: parent.nativeUniqueName,
                     version: VERSION_REFERENCED_ONLY,
-                    metadata: parent.metadata,
+                    metadata: JSON.stringify(parent.metadata),
                     systemType: parent.system.type,
                     systemTypeUniqueId: parent.system.uniqueIdentifier,
                 });
@@ -114,7 +114,7 @@ export class Ingest {
                     tenantId: obj.tenantId,
                     nativeUniqueName: child.nativeUniqueName,
                     version: VERSION_REFERENCED_ONLY,
-                    metadata: child.metadata,
+                    metadata: JSON.stringify(child.metadata),
                     systemType: child.system.type,
                     systemTypeUniqueId: child.system.uniqueIdentifier,
                 });

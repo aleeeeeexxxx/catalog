@@ -36,9 +36,8 @@ describe('ResourceDatastore', () => {
             systemUniqueIdentifier: 'system-not-exist',
             resource: {
                 nativeUniqueName: 'createOrUpdateResource',
-                name: 'name',
-                description: 'description',
-                version: '1.0',
+                metadata: '{}',
+                version: 1,
             },
         });
 
