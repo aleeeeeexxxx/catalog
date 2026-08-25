@@ -3,7 +3,7 @@
  */
 
 import { IContext } from '../../context';
-import { IResource, IStage, ISystem, Source } from './artifacts';
+import { IResource, ISystem, Source } from './artifacts';
 import { DbClient, PrismaTx } from './client';
 import { Prisma } from '../../../generated/prisma/client';
 import { getLogger } from '../../logger';
@@ -286,6 +286,28 @@ export class SystemDatastore {
             tx
         );
     }
+
+    async batchUpsertFromStage(ctx: IContext, stageIds: string[]) {
+        await this.client.prisma.$executeRaw`
+            INSERT INTO "catalog"."System" (
+                "id",
+                "createdAt",
+                "tenantId",
+                "type",
+                "uniqueIdentifier"
+            )
+            SELECT
+                ss."stageResourceId",
+                NOW() AS "createdAt",
+                ss."tenantId",
+                ss."type",
+                ss."uniqueIdentifier"
+            FROM "stage"."StagedSystem" ss
+            WHERE ss."stageId" IN (${Prisma.join(stageIds)})
+            ON CONFLICT ("tenantId", "uniqueIdentifier") WHERE "deletedAt" IS NULL
+            DO NOTHING;
+        `;
+    }
 }
 
 export class StageDatastore {
@@ -295,86 +317,43 @@ export class StageDatastore {
         this.client = client;
     }
 
-    async stage(ctx: IContext, stagedObjects: IStage[]): Promise<string[]> {
-        const stageIds: string[] = [];
-        const stages: Prisma.StageCreateManyInput[] = [];
-        const stageResources: Prisma.StagedResourceCreateManyInput[] = [];
-
-        stagedObjects.forEach(obj => {
-            const id = Generate32UUID();
-            stageIds.push(id);
-
-            stages.push({
-                id: id,
-                tenantId: obj.tenantId,
-                systemId: obj.systemId,
-                nativeUniqueName: obj.nativeUniqueName,
-                version: obj.version,
-            });
-
-            stageResources.push({
-                stageId: id,
-                name: obj.resource.name,
-                desc: obj.resource.description,
-            });
-        });
-
-        // create items first, in case ingest when items are not staged
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stagedResource.createMany({ data: stageResources });
-        });
-
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stage.createMany({ data: stages });
-        });
-
-        return stageIds;
-    }
-
-    async listStages(ctx: IContext, startFrom?: string, batch?: number): Promise<string[]> {
-        batch = batch ?? 500;
-
-        return await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            const stages = await tx.stage.findMany({
-                where: {
-                    ...(startFrom && {
-                        id: {
-                            gt: startFrom,
-                        },
-                    }),
-                },
-                select: {
-                    id: true,
-                },
-                orderBy: {
-                    id: 'asc',
-                },
-                take: batch,
-            });
-
-            return stages.map((s: { id: string }) => s.id);
+    async stage(
+        ctx: IContext,
+        resources: Prisma.StageResourceCreateManyInput[],
+        relationship: Prisma.StagedRelationshipCreateManyInput[],
+        systems: Prisma.StagedSystemCreateManyInput[]
+    ) {
+        await this.client.transaction(ctx, async tx => {
+            await tx.stageResource.createMany({ data: resources });
+            await tx.stagedRelationship.createMany({ data: relationship });
+            await tx.stagedSystem.createMany({ data: systems });
         });
     }
 
-    async delete(ctx: IContext, stageIds: string[]) {
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stage.deleteMany({
-                where: {
-                    id: {
-                        in: stageIds,
-                    },
-                },
-            });
-        });
-
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stagedResource.deleteMany({
-                where: {
-                    stageId: {
-                        in: stageIds,
-                    },
-                },
-            });
-        });
+    async getPendingStages(ctx: IContext, maxStage: number): Promise<string[]> {
+        const stageIds = await this.client.prisma.$queryRaw<{ stageId: string }[]>`
+            WITH locked_rows AS (
+                SELECT "stageId", "id",
+                       DENSE_RANK() OVER (ORDER BY "stageId") as stage_rank
+                FROM "stage"."StageResource"
+                WHERE "startIngestAt" IS NULL
+                ORDER BY "stageId", "id"
+                FOR UPDATE SKIP LOCKED
+            )
+            UPDATE "stage"."StageResource" sr
+            SET "startIngestAt" = NOW()
+            FROM locked_rows lr
+            WHERE sr."stageId" = lr."stageId"
+                AND sr."id" = lr."id"
+                AND lr.stage_rank <= ${maxStage}
+            RETURNING DISTINCT sr."stageId";
+        `;
+        return stageIds.map(v => v.stageId);
     }
+
+    async delete(ctx: IContext, stageIds: string[]) {}
+}
+
+export class RelationshipDatastore {
+    async batchUpsertStage(ctx: IContext, stageIds: string[]) {}
 }

@@ -399,8 +399,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   System: 'System',
   Resource: 'Resource',
-  Stage: 'Stage',
-  StagedResource: 'StagedResource'
+  ResourceRelationship: 'ResourceRelationship',
+  StageResource: 'StageResource',
+  StagedRelationship: 'StagedRelationship',
+  StagedSystem: 'StagedSystem'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "system" | "resource" | "stage" | "stagedResource"
+    modelProps: "system" | "resource" | "resourceRelationship" | "stageResource" | "stagedRelationship" | "stagedSystem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -568,151 +570,299 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    Stage: {
-      payload: Prisma.$StagePayload<ExtArgs>
-      fields: Prisma.StageFieldRefs
+    ResourceRelationship: {
+      payload: Prisma.$ResourceRelationshipPayload<ExtArgs>
+      fields: Prisma.ResourceRelationshipFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.StageFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload> | null
+          args: Prisma.ResourceRelationshipFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.StageFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         findFirst: {
-          args: Prisma.StageFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload> | null
+          args: Prisma.ResourceRelationshipFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.StageFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         findMany: {
-          args: Prisma.StageFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+          args: Prisma.ResourceRelationshipFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>[]
         }
         create: {
-          args: Prisma.StageCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         createMany: {
-          args: Prisma.StageCreateManyArgs<ExtArgs>
+          args: Prisma.ResourceRelationshipCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.StageCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+          args: Prisma.ResourceRelationshipCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>[]
         }
         delete: {
-          args: Prisma.StageDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         update: {
-          args: Prisma.StageUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         deleteMany: {
-          args: Prisma.StageDeleteManyArgs<ExtArgs>
+          args: Prisma.ResourceRelationshipDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.StageUpdateManyArgs<ExtArgs>
+          args: Prisma.ResourceRelationshipUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.StageUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>[]
+          args: Prisma.ResourceRelationshipUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>[]
         }
         upsert: {
-          args: Prisma.StageUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagePayload>
+          args: Prisma.ResourceRelationshipUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResourceRelationshipPayload>
         }
         aggregate: {
-          args: Prisma.StageAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateStage>
+          args: Prisma.ResourceRelationshipAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResourceRelationship>
         }
         groupBy: {
-          args: Prisma.StageGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StageGroupByOutputType>[]
+          args: Prisma.ResourceRelationshipGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResourceRelationshipGroupByOutputType>[]
         }
         count: {
-          args: Prisma.StageCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StageCountAggregateOutputType> | number
+          args: Prisma.ResourceRelationshipCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResourceRelationshipCountAggregateOutputType> | number
         }
       }
     }
-    StagedResource: {
-      payload: Prisma.$StagedResourcePayload<ExtArgs>
-      fields: Prisma.StagedResourceFieldRefs
+    StageResource: {
+      payload: Prisma.$StageResourcePayload<ExtArgs>
+      fields: Prisma.StageResourceFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.StagedResourceFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload> | null
+          args: Prisma.StageResourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.StagedResourceFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         findFirst: {
-          args: Prisma.StagedResourceFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload> | null
+          args: Prisma.StageResourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.StagedResourceFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         findMany: {
-          args: Prisma.StagedResourceFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+          args: Prisma.StageResourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>[]
         }
         create: {
-          args: Prisma.StagedResourceCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         createMany: {
-          args: Prisma.StagedResourceCreateManyArgs<ExtArgs>
+          args: Prisma.StageResourceCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.StagedResourceCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+          args: Prisma.StageResourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>[]
         }
         delete: {
-          args: Prisma.StagedResourceDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         update: {
-          args: Prisma.StagedResourceUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         deleteMany: {
-          args: Prisma.StagedResourceDeleteManyArgs<ExtArgs>
+          args: Prisma.StageResourceDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.StagedResourceUpdateManyArgs<ExtArgs>
+          args: Prisma.StageResourceUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.StagedResourceUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>[]
+          args: Prisma.StageResourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>[]
         }
         upsert: {
-          args: Prisma.StagedResourceUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedResourcePayload>
+          args: Prisma.StageResourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StageResourcePayload>
         }
         aggregate: {
-          args: Prisma.StagedResourceAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateStagedResource>
+          args: Prisma.StageResourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStageResource>
         }
         groupBy: {
-          args: Prisma.StagedResourceGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StagedResourceGroupByOutputType>[]
+          args: Prisma.StageResourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StageResourceGroupByOutputType>[]
         }
         count: {
-          args: Prisma.StagedResourceCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.StagedResourceCountAggregateOutputType> | number
+          args: Prisma.StageResourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StageResourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    StagedRelationship: {
+      payload: Prisma.$StagedRelationshipPayload<ExtArgs>
+      fields: Prisma.StagedRelationshipFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StagedRelationshipFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StagedRelationshipFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        findFirst: {
+          args: Prisma.StagedRelationshipFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StagedRelationshipFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        findMany: {
+          args: Prisma.StagedRelationshipFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>[]
+        }
+        create: {
+          args: Prisma.StagedRelationshipCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        createMany: {
+          args: Prisma.StagedRelationshipCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StagedRelationshipCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>[]
+        }
+        delete: {
+          args: Prisma.StagedRelationshipDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        update: {
+          args: Prisma.StagedRelationshipUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        deleteMany: {
+          args: Prisma.StagedRelationshipDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StagedRelationshipUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StagedRelationshipUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>[]
+        }
+        upsert: {
+          args: Prisma.StagedRelationshipUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedRelationshipPayload>
+        }
+        aggregate: {
+          args: Prisma.StagedRelationshipAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStagedRelationship>
+        }
+        groupBy: {
+          args: Prisma.StagedRelationshipGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedRelationshipGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StagedRelationshipCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedRelationshipCountAggregateOutputType> | number
+        }
+      }
+    }
+    StagedSystem: {
+      payload: Prisma.$StagedSystemPayload<ExtArgs>
+      fields: Prisma.StagedSystemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StagedSystemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StagedSystemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        findFirst: {
+          args: Prisma.StagedSystemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StagedSystemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        findMany: {
+          args: Prisma.StagedSystemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>[]
+        }
+        create: {
+          args: Prisma.StagedSystemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        createMany: {
+          args: Prisma.StagedSystemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StagedSystemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>[]
+        }
+        delete: {
+          args: Prisma.StagedSystemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        update: {
+          args: Prisma.StagedSystemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        deleteMany: {
+          args: Prisma.StagedSystemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StagedSystemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StagedSystemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>[]
+        }
+        upsert: {
+          args: Prisma.StagedSystemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StagedSystemPayload>
+        }
+        aggregate: {
+          args: Prisma.StagedSystemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStagedSystem>
+        }
+        groupBy: {
+          args: Prisma.StagedSystemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedSystemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StagedSystemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StagedSystemCountAggregateOutputType> | number
         }
       }
     }
@@ -757,9 +907,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const SystemScalarFieldEnum = {
   id: 'id',
-  tenantId: 'tenantId',
   createdAt: 'createdAt',
   deletedAt: 'deletedAt',
+  tenantId: 'tenantId',
   type: 'type',
   uniqueIdentifier: 'uniqueIdentifier'
 } as const
@@ -769,41 +919,66 @@ export type SystemScalarFieldEnum = (typeof SystemScalarFieldEnum)[keyof typeof 
 
 export const ResourceScalarFieldEnum = {
   id: 'id',
-  tenantId: 'tenantId',
   createdAt: 'createdAt',
   createdBy: 'createdBy',
   deletedAt: 'deletedAt',
   deletedBy: 'deletedBy',
-  version: 'version',
+  systemId: 'systemId',
+  tenantId: 'tenantId',
   nativeUniqueName: 'nativeUniqueName',
-  name: 'name',
-  desc: 'desc',
-  systemId: 'systemId'
+  version: 'version',
+  metadata: 'metadata'
 } as const
 
 export type ResourceScalarFieldEnum = (typeof ResourceScalarFieldEnum)[keyof typeof ResourceScalarFieldEnum]
 
 
-export const StageScalarFieldEnum = {
+export const ResourceRelationshipScalarFieldEnum = {
+  sourceId: 'sourceId',
+  targetId: 'targetId',
+  type: 'type'
+} as const
+
+export type ResourceRelationshipScalarFieldEnum = (typeof ResourceRelationshipScalarFieldEnum)[keyof typeof ResourceRelationshipScalarFieldEnum]
+
+
+export const StageResourceScalarFieldEnum = {
+  stageId: 'stageId',
   id: 'id',
   stageAt: 'stageAt',
+  startIngestAt: 'startIngestAt',
+  deletedBy: 'deletedBy',
   tenantId: 'tenantId',
-  systemId: 'systemId',
   nativeUniqueName: 'nativeUniqueName',
   version: 'version',
-  deletedBy: 'deletedBy'
+  systemType: 'systemType',
+  systemTypeUniqueId: 'systemTypeUniqueId',
+  metadata: 'metadata'
 } as const
 
-export type StageScalarFieldEnum = (typeof StageScalarFieldEnum)[keyof typeof StageScalarFieldEnum]
+export type StageResourceScalarFieldEnum = (typeof StageResourceScalarFieldEnum)[keyof typeof StageResourceScalarFieldEnum]
 
 
-export const StagedResourceScalarFieldEnum = {
+export const StagedRelationshipScalarFieldEnum = {
   stageId: 'stageId',
-  name: 'name',
-  desc: 'desc'
+  tenantId: 'tenantId',
+  sourceStageId: 'sourceStageId',
+  targetStageId: 'targetStageId',
+  type: 'type'
 } as const
 
-export type StagedResourceScalarFieldEnum = (typeof StagedResourceScalarFieldEnum)[keyof typeof StagedResourceScalarFieldEnum]
+export type StagedRelationshipScalarFieldEnum = (typeof StagedRelationshipScalarFieldEnum)[keyof typeof StagedRelationshipScalarFieldEnum]
+
+
+export const StagedSystemScalarFieldEnum = {
+  stageId: 'stageId',
+  stageResourceId: 'stageResourceId',
+  tenantId: 'tenantId',
+  type: 'type',
+  uniqueIdentifier: 'uniqueIdentifier'
+} as const
+
+export type StagedSystemScalarFieldEnum = (typeof StagedSystemScalarFieldEnum)[keyof typeof StagedSystemScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -875,6 +1050,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1030,8 +1219,10 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   system?: Prisma.SystemOmit
   resource?: Prisma.ResourceOmit
-  stage?: Prisma.StageOmit
-  stagedResource?: Prisma.StagedResourceOmit
+  resourceRelationship?: Prisma.ResourceRelationshipOmit
+  stageResource?: Prisma.StageResourceOmit
+  stagedRelationship?: Prisma.StagedRelationshipOmit
+  stagedSystem?: Prisma.StagedSystemOmit
 }
 
 /* Types for Logging */

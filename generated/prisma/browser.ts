@@ -28,12 +28,22 @@ export type System = Prisma.SystemModel
  */
 export type Resource = Prisma.ResourceModel
 /**
- * Model Stage
+ * Model ResourceRelationship
  * 
  */
-export type Stage = Prisma.StageModel
+export type ResourceRelationship = Prisma.ResourceRelationshipModel
 /**
- * Model StagedResource
+ * Model StageResource
  * 
  */
-export type StagedResource = Prisma.StagedResourceModel
+export type StageResource = Prisma.StageResourceModel
+/**
+ * Model StagedRelationship
+ * 
+ */
+export type StagedRelationship = Prisma.StagedRelationshipModel
+/**
+ * Model StagedSystem
+ * 
+ */
+export type StagedSystem = Prisma.StagedSystemModel
