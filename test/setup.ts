@@ -5,6 +5,7 @@ import { Once } from '../src/utils/once';
 import { getLogger } from '../src/logger';
 import { createNewContext } from '../src/context';
 import { RedisClient } from '../src/infra';
+import { Prisma } from '../generated/prisma/client';
 
 const logger = getLogger(__filename);
 
@@ -39,11 +40,14 @@ export async function clearTestDb() {
     const ctx = createNewContext('setup');
 
     logger.info(`Deleting all current data in ${ctx.tenantId}`);
-    await db.transaction(ctx, async (tx: any) => {
+    await db.transaction(ctx, async (tx: Prisma.TransactionClient) => {
         await tx.resource.deleteMany();
         await tx.system.deleteMany();
-        await tx.stage.deleteMany();
-        await tx.stagedResource.deleteMany();
+        await tx.resourceRelationship.deleteMany();
+
+        await tx.stageResource.deleteMany();
+        await tx.stagedSystem.deleteMany();
+        await tx.stagedRelationship.deleteMany();
     });
 }
 

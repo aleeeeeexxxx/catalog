@@ -113,6 +113,7 @@ describe('StageDatastore', () => {
                 systemType: 'BTP',
                 systemTypeUniqueId: 'system-001',
                 metadata: JSON.stringify({ name: 'Test Resource 1' }),
+                startIngestAt: new Date(),
             },
             {
                 stageId: stageId1,
@@ -123,6 +124,7 @@ describe('StageDatastore', () => {
                 systemType: 'BTP',
                 systemTypeUniqueId: 'system-001',
                 metadata: JSON.stringify({ name: 'Test Resource 2' }),
+                startIngestAt: new Date(),
             },
             {
                 stageId: stageId2,
@@ -133,6 +135,7 @@ describe('StageDatastore', () => {
                 systemType: 'S4',
                 systemTypeUniqueId: 'system-002',
                 metadata: JSON.stringify({ name: 'Test Resource 3' }),
+                startIngestAt: new Date(),
             },
         ];
 
@@ -236,7 +239,7 @@ describe('StageDatastore', () => {
         // Get only 1 stageId
         const pendingStages = await stage.getPendingStages(ctx, 1);
         expect(pendingStages).toHaveLength(1);
-        expect([stageId3, stageId4]).toContain(pendingStages[0]);
+        expect([stageId3, stageId4]).toContainEqual(pendingStages[0]);
 
         // Verify startIngestAt was updated for the returned stageId
         const updated = await dbClient.prisma.stageResource.findMany({

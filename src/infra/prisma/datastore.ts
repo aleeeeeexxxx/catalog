@@ -331,21 +331,28 @@ export class StageDatastore {
 
     async getPendingStages(ctx: IContext, maxStage: number): Promise<string[]> {
         const stageIds = await this.client.prisma.$queryRaw<{ stageId: string }[]>`
-            WITH locked_rows AS (
-                SELECT "stageId", "id",
-                       DENSE_RANK() OVER (ORDER BY "stageId") as stage_rank
+            WITH to_lock AS (
+                SELECT "stageId", "id"
                 FROM "stage"."StageResource"
                 WHERE "startIngestAt" IS NULL
-                ORDER BY "stageId", "id"
+                    AND "tenantId" = ${ctx.tenantId}
                 FOR UPDATE SKIP LOCKED
+            ),
+            ranked AS (
+                SELECT "stageId", "id",
+                       DENSE_RANK() OVER (ORDER BY "stageId") as stage_rank
+                FROM to_lock
+            ),
+            updated AS (
+                UPDATE "stage"."StageResource" sr
+                SET "startIngestAt" = NOW()
+                FROM ranked r
+                WHERE sr."stageId" = r."stageId"
+                    AND sr."id" = r."id"
+                    AND r.stage_rank <= ${maxStage}
+                RETURNING sr."stageId"
             )
-            UPDATE "stage"."StageResource" sr
-            SET "startIngestAt" = NOW()
-            FROM locked_rows lr
-            WHERE sr."stageId" = lr."stageId"
-                AND sr."id" = lr."id"
-                AND lr.stage_rank <= ${maxStage}
-            RETURNING DISTINCT sr."stageId";
+            SELECT DISTINCT "stageId" FROM updated;
         `;
         return stageIds.map(v => v.stageId);
     }

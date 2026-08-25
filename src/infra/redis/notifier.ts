@@ -1,6 +1,8 @@
 import { RedisClient } from './client';
 import { Job, Queue, Worker } from 'bullmq';
-import { logger } from '../log';
+import { getLogger } from '../../logger';
+
+const logger = getLogger(__filename);
 
 export type NotifierCallback = () => Promise<void>;
 
