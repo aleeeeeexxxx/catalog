@@ -53,8 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   System: 'System',
   Resource: 'Resource',
-  Stage: 'Stage',
-  StagedResource: 'StagedResource'
+  ResourceRelationship: 'ResourceRelationship',
+  StageResource: 'StageResource',
+  StagedRelationship: 'StagedRelationship',
+  StagedSystem: 'StagedSystem'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -75,9 +77,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const SystemScalarFieldEnum = {
   id: 'id',
-  tenantId: 'tenantId',
   createdAt: 'createdAt',
   deletedAt: 'deletedAt',
+  tenantId: 'tenantId',
   type: 'type',
   uniqueIdentifier: 'uniqueIdentifier'
 } as const
@@ -87,41 +89,66 @@ export type SystemScalarFieldEnum = (typeof SystemScalarFieldEnum)[keyof typeof 
 
 export const ResourceScalarFieldEnum = {
   id: 'id',
-  tenantId: 'tenantId',
   createdAt: 'createdAt',
   createdBy: 'createdBy',
   deletedAt: 'deletedAt',
   deletedBy: 'deletedBy',
-  version: 'version',
+  systemId: 'systemId',
+  tenantId: 'tenantId',
   nativeUniqueName: 'nativeUniqueName',
-  name: 'name',
-  desc: 'desc',
-  systemId: 'systemId'
+  version: 'version',
+  metadata: 'metadata'
 } as const
 
 export type ResourceScalarFieldEnum = (typeof ResourceScalarFieldEnum)[keyof typeof ResourceScalarFieldEnum]
 
 
-export const StageScalarFieldEnum = {
+export const ResourceRelationshipScalarFieldEnum = {
+  sourceId: 'sourceId',
+  targetId: 'targetId',
+  type: 'type'
+} as const
+
+export type ResourceRelationshipScalarFieldEnum = (typeof ResourceRelationshipScalarFieldEnum)[keyof typeof ResourceRelationshipScalarFieldEnum]
+
+
+export const StageResourceScalarFieldEnum = {
+  stageId: 'stageId',
   id: 'id',
   stageAt: 'stageAt',
+  startIngestAt: 'startIngestAt',
+  deletedBy: 'deletedBy',
   tenantId: 'tenantId',
-  systemId: 'systemId',
   nativeUniqueName: 'nativeUniqueName',
   version: 'version',
-  deletedBy: 'deletedBy'
+  systemType: 'systemType',
+  systemTypeUniqueId: 'systemTypeUniqueId',
+  metadata: 'metadata'
 } as const
 
-export type StageScalarFieldEnum = (typeof StageScalarFieldEnum)[keyof typeof StageScalarFieldEnum]
+export type StageResourceScalarFieldEnum = (typeof StageResourceScalarFieldEnum)[keyof typeof StageResourceScalarFieldEnum]
 
 
-export const StagedResourceScalarFieldEnum = {
+export const StagedRelationshipScalarFieldEnum = {
   stageId: 'stageId',
-  name: 'name',
-  desc: 'desc'
+  tenantId: 'tenantId',
+  sourceStageId: 'sourceStageId',
+  targetStageId: 'targetStageId',
+  type: 'type'
 } as const
 
-export type StagedResourceScalarFieldEnum = (typeof StagedResourceScalarFieldEnum)[keyof typeof StagedResourceScalarFieldEnum]
+export type StagedRelationshipScalarFieldEnum = (typeof StagedRelationshipScalarFieldEnum)[keyof typeof StagedRelationshipScalarFieldEnum]
+
+
+export const StagedSystemScalarFieldEnum = {
+  stageId: 'stageId',
+  stageResourceId: 'stageResourceId',
+  tenantId: 'tenantId',
+  type: 'type',
+  uniqueIdentifier: 'uniqueIdentifier'
+} as const
+
+export type StagedSystemScalarFieldEnum = (typeof StagedSystemScalarFieldEnum)[keyof typeof StagedSystemScalarFieldEnum]
 
 
 export const SortOrder = {

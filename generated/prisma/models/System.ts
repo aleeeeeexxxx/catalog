@@ -26,27 +26,27 @@ export type AggregateSystem = {
 
 export type SystemMinAggregateOutputType = {
   id: string | null
-  tenantId: string | null
   createdAt: Date | null
   deletedAt: Date | null
+  tenantId: string | null
   type: string | null
   uniqueIdentifier: string | null
 }
 
 export type SystemMaxAggregateOutputType = {
   id: string | null
-  tenantId: string | null
   createdAt: Date | null
   deletedAt: Date | null
+  tenantId: string | null
   type: string | null
   uniqueIdentifier: string | null
 }
 
 export type SystemCountAggregateOutputType = {
   id: number
-  tenantId: number
   createdAt: number
   deletedAt: number
+  tenantId: number
   type: number
   uniqueIdentifier: number
   _all: number
@@ -55,27 +55,27 @@ export type SystemCountAggregateOutputType = {
 
 export type SystemMinAggregateInputType = {
   id?: true
-  tenantId?: true
   createdAt?: true
   deletedAt?: true
+  tenantId?: true
   type?: true
   uniqueIdentifier?: true
 }
 
 export type SystemMaxAggregateInputType = {
   id?: true
-  tenantId?: true
   createdAt?: true
   deletedAt?: true
+  tenantId?: true
   type?: true
   uniqueIdentifier?: true
 }
 
 export type SystemCountAggregateInputType = {
   id?: true
-  tenantId?: true
   createdAt?: true
   deletedAt?: true
+  tenantId?: true
   type?: true
   uniqueIdentifier?: true
   _all?: true
@@ -155,9 +155,9 @@ export type SystemGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type SystemGroupByOutputType = {
   id: string
-  tenantId: string
   createdAt: Date
   deletedAt: Date | null
+  tenantId: string
   type: string
   uniqueIdentifier: string
   _count: SystemCountAggregateOutputType | null
@@ -185,18 +185,18 @@ export type SystemWhereInput = {
   OR?: Prisma.SystemWhereInput[]
   NOT?: Prisma.SystemWhereInput | Prisma.SystemWhereInput[]
   id?: Prisma.StringFilter<"System"> | string
-  tenantId?: Prisma.StringFilter<"System"> | string
   createdAt?: Prisma.DateTimeFilter<"System"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"System"> | Date | string | null
+  tenantId?: Prisma.StringFilter<"System"> | string
   type?: Prisma.StringFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringFilter<"System"> | string
 }
 
 export type SystemOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
 }
@@ -207,18 +207,18 @@ export type SystemWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.SystemWhereInput | Prisma.SystemWhereInput[]
   OR?: Prisma.SystemWhereInput[]
   NOT?: Prisma.SystemWhereInput | Prisma.SystemWhereInput[]
-  tenantId?: Prisma.StringFilter<"System"> | string
   createdAt?: Prisma.DateTimeFilter<"System"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"System"> | Date | string | null
+  tenantId?: Prisma.StringFilter<"System"> | string
   type?: Prisma.StringFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringFilter<"System"> | string
 }, "id" | "tenantId_uniqueIdentifier">
 
 export type SystemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
   _count?: Prisma.SystemCountOrderByAggregateInput
@@ -231,72 +231,72 @@ export type SystemScalarWhereWithAggregatesInput = {
   OR?: Prisma.SystemScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SystemScalarWhereWithAggregatesInput | Prisma.SystemScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"System"> | string
-  tenantId?: Prisma.StringWithAggregatesFilter<"System"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"System"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"System"> | Date | string | null
+  tenantId?: Prisma.StringWithAggregatesFilter<"System"> | string
   type?: Prisma.StringWithAggregatesFilter<"System"> | string
   uniqueIdentifier?: Prisma.StringWithAggregatesFilter<"System"> | string
 }
 
 export type SystemCreateInput = {
   id: string
-  tenantId: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
+  tenantId: string
   type: string
   uniqueIdentifier: string
 }
 
 export type SystemUncheckedCreateInput = {
   id: string
-  tenantId: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
+  tenantId: string
   type: string
   uniqueIdentifier: string
 }
 
 export type SystemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SystemUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SystemCreateManyInput = {
   id: string
-  tenantId: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
+  tenantId: string
   type: string
   uniqueIdentifier: string
 }
 
 export type SystemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SystemUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   uniqueIdentifier?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -308,27 +308,27 @@ export type SystemTenantIdUniqueIdentifierCompoundUniqueInput = {
 
 export type SystemCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
 }
 
 export type SystemMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
 }
 
 export type SystemMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   uniqueIdentifier?: Prisma.SortOrder
 }
@@ -349,50 +349,50 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 
 export type SystemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  tenantId?: boolean
   createdAt?: boolean
   deletedAt?: boolean
+  tenantId?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  tenantId?: boolean
   createdAt?: boolean
   deletedAt?: boolean
+  tenantId?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  tenantId?: boolean
   createdAt?: boolean
   deletedAt?: boolean
+  tenantId?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
 }, ExtArgs["result"]["system"]>
 
 export type SystemSelectScalar = {
   id?: boolean
-  tenantId?: boolean
   createdAt?: boolean
   deletedAt?: boolean
+  tenantId?: boolean
   type?: boolean
   uniqueIdentifier?: boolean
 }
 
-export type SystemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "createdAt" | "deletedAt" | "type" | "uniqueIdentifier", ExtArgs["result"]["system"]>
+export type SystemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "deletedAt" | "tenantId" | "type" | "uniqueIdentifier", ExtArgs["result"]["system"]>
 
 export type $SystemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "System"
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    tenantId: string
     createdAt: Date
     deletedAt: Date | null
+    tenantId: string
     type: string
     uniqueIdentifier: string
   }, ExtArgs["result"]["system"]>
@@ -819,9 +819,9 @@ export interface Prisma__SystemClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface SystemFieldRefs {
   readonly id: Prisma.FieldRef<"System", 'String'>
-  readonly tenantId: Prisma.FieldRef<"System", 'String'>
   readonly createdAt: Prisma.FieldRef<"System", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"System", 'DateTime'>
+  readonly tenantId: Prisma.FieldRef<"System", 'String'>
   readonly type: Prisma.FieldRef<"System", 'String'>
   readonly uniqueIdentifier: Prisma.FieldRef<"System", 'String'>
 }

@@ -3,7 +3,7 @@
  */
 
 import { IContext } from '../../context';
-import { IResource, IStage, ISystem, Source } from './artifacts';
+import { IResource, ISystem, Source } from './artifacts';
 import { DbClient, PrismaTx } from './client';
 import { Prisma } from '../../../generated/prisma/client';
 import { getLogger } from '../../logger';
@@ -48,9 +48,8 @@ export class ResourceDatastore {
 
                 return {
                     nativeUniqueName: resource.nativeUniqueName,
-                    name: resource.name,
-                    description: resource.desc,
                     version: resource.version,
+                    metadata: resource.metadata,
                 };
             },
             tx
@@ -122,8 +121,7 @@ export class ResourceDatastore {
                             id: Generate32UUID(),
                             systemId: system.id,
                             nativeUniqueName: resource.resource.nativeUniqueName,
-                            name: resource.resource.name,
-                            desc: resource.resource.description,
+                            metadata: resource.resource.metadata,
                             version: resource.resource.version,
                             tenantId: ctx.tenantId,
                         },
@@ -133,15 +131,15 @@ export class ResourceDatastore {
 
                 logger.debug(ctx, `resource exists, updating current based on version`);
 
-                if (existing.version < resource.resource.version) {
+                const incomingVersion = resource.resource.version;
+                if (existing.version < incomingVersion) {
                     logger.debug(ctx, `current version outdated, updating new one`);
 
                     const updated = await tx.resource.update({
                         where: { id: existing.id },
                         data: {
-                            name: resource.resource.name,
-                            desc: resource.resource.description,
-                            version: resource.resource.version,
+                            metadata: resource.resource.metadata,
+                            version: incomingVersion,
                         },
                     });
                     return { id: updated.id };
@@ -162,26 +160,29 @@ export class ResourceDatastore {
         await this.client.prisma.$executeRaw`
             WITH staged AS (
                 SELECT
-                    t."id",
-                    t."tenantId",
-                    t."systemId",
-                    t."nativeUniqueName",
-                    t."version",
-                    CASE WHEN t."deletedBy" is NULL THEN tr."name" ELSE r."name"       END AS "name",
-                    CASE WHEN t."deletedBy" is NULL THEN tr."desc" ELSE r."desc"       END AS "desc",
-                    CASE WHEN t."deletedBy" is NULL THEN NULL      ELSE t."deletedBy"  END AS "deletedBy"
-                FROM "stage"."Stage" t
-                INNER JOIN "stage"."StagedResource" tr
-                    ON t."id" = tr."stageId"
+                    sr."id",
+                    sr."tenantId",
+                    s."id" AS "systemId",
+                    sr."nativeUniqueName",
+                    sr."version",
+                    sr."metadata",
+                    sr."deletedBy"
+                FROM "stage"."StageResource" sr
+                INNER JOIN "catalog"."System" s
+                    ON s."tenantId" = sr."tenantId"
+                        AND s."type" = sr."systemType"
+                        AND s."uniqueIdentifier" = sr."systemTypeUniqueId"
+                        AND s."deletedAt" IS NULL
                 LEFT JOIN "catalog"."Resource" r
-                    ON r."tenantId" = t."tenantId"
-                        AND r."systemId" = t."systemId"
-                        AND r."nativeUniqueName" = t."nativeUniqueName"
+                    ON r."tenantId" = sr."tenantId"
+                        AND r."systemId" = s."id"
+                        AND r."nativeUniqueName" = sr."nativeUniqueName"
+                        AND r."deletedAt" IS NULL
                 WHERE
-                    tr."stageId" IN (${Prisma.join(stageIds)})
+                    sr."stageId" IN (${Prisma.join(stageIds)})
                     AND (
-                            t."version" > r."version"
-                            OR r."version" is NULL
+                            sr."version" > r."version"
+                            OR r."version" IS NULL
                         )
             )
             INSERT INTO "catalog"."Resource" (
@@ -190,17 +191,15 @@ export class ResourceDatastore {
                 "systemId",
                 "nativeUniqueName",
                 "version",
-                "name",
-                "desc",
+                "metadata",
                 "deletedBy"
             )
             SELECT * FROM staged
             ON CONFLICT ("tenantId", "systemId", "nativeUniqueName") WHERE "deletedAt" IS NULL
             DO UPDATE SET
                 "version"   = EXCLUDED."version",
-                "name"      = EXCLUDED."name",
-                "desc"      = EXCLUDED."desc",
-                "deletedAt" = CASE WHEN EXCLUDED."deletedBy" is NULL THEN NULL ELSE NOW() END,
+                "metadata"  = EXCLUDED."metadata",
+                "deletedAt" = CASE WHEN EXCLUDED."deletedBy" IS NULL THEN NULL ELSE NOW() END,
                 "deletedBy" = EXCLUDED."deletedBy";
         `;
     }
@@ -286,6 +285,28 @@ export class SystemDatastore {
             tx
         );
     }
+
+    async batchUpsertFromStage(ctx: IContext, stageIds: string[]) {
+        await this.client.prisma.$executeRaw`
+            INSERT INTO "catalog"."System" (
+                "id",
+                "createdAt",
+                "tenantId",
+                "type",
+                "uniqueIdentifier"
+            )
+            SELECT
+                ss."stageResourceId",
+                NOW() AS "createdAt",
+                ss."tenantId",
+                ss."type",
+                ss."uniqueIdentifier"
+            FROM "stage"."StagedSystem" ss
+            WHERE ss."stageId" IN (${Prisma.join(stageIds)})
+            ON CONFLICT ("tenantId", "uniqueIdentifier") WHERE "deletedAt" IS NULL
+            DO NOTHING;
+        `;
+    }
 }
 
 export class StageDatastore {
@@ -295,86 +316,75 @@ export class StageDatastore {
         this.client = client;
     }
 
-    async stage(ctx: IContext, stagedObjects: IStage[]): Promise<string[]> {
-        const stageIds: string[] = [];
-        const stages: Prisma.StageCreateManyInput[] = [];
-        const stageResources: Prisma.StagedResourceCreateManyInput[] = [];
-
-        stagedObjects.forEach(obj => {
-            const id = Generate32UUID();
-            stageIds.push(id);
-
-            stages.push({
-                id: id,
-                tenantId: obj.tenantId,
-                systemId: obj.systemId,
-                nativeUniqueName: obj.nativeUniqueName,
-                version: obj.version,
-            });
-
-            stageResources.push({
-                stageId: id,
-                name: obj.resource.name,
-                desc: obj.resource.description,
-            });
-        });
-
-        // create items first, in case ingest when items are not staged
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stagedResource.createMany({ data: stageResources });
-        });
-
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stage.createMany({ data: stages });
-        });
-
-        return stageIds;
-    }
-
-    async listStages(ctx: IContext, startFrom?: string, batch?: number): Promise<string[]> {
-        batch = batch ?? 500;
-
-        return await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            const stages = await tx.stage.findMany({
-                where: {
-                    ...(startFrom && {
-                        id: {
-                            gt: startFrom,
-                        },
-                    }),
-                },
-                select: {
-                    id: true,
-                },
-                orderBy: {
-                    id: 'asc',
-                },
-                take: batch,
-            });
-
-            return stages.map((s: { id: string }) => s.id);
+    async stage(
+        ctx: IContext,
+        resources: Prisma.StageResourceCreateManyInput[],
+        relationship: Prisma.StagedRelationshipCreateManyInput[],
+        systems: Prisma.StagedSystemCreateManyInput[]
+    ) {
+        await this.client.transaction(ctx, async tx => {
+            await tx.stageResource.createMany({ data: resources });
+            await tx.stagedRelationship.createMany({ data: relationship });
+            await tx.stagedSystem.createMany({ data: systems });
         });
     }
 
-    async delete(ctx: IContext, stageIds: string[]) {
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stage.deleteMany({
-                where: {
-                    id: {
-                        in: stageIds,
-                    },
-                },
-            });
-        });
+    async getPendingStages(ctx: IContext, maxStage: number): Promise<string[]> {
+        const stageIds = await this.client.prisma.$queryRaw<{ stageId: string }[]>`
+            WITH locked_rows AS (
+                SELECT "stageId", "id",
+                       DENSE_RANK() OVER (ORDER BY "stageId") as stage_rank
+                FROM "stage"."StageResource"
+                WHERE "startIngestAt" IS NULL
+                ORDER BY "stageId", "id"
+                FOR UPDATE SKIP LOCKED
+            )
+            UPDATE "stage"."StageResource" sr
+            SET "startIngestAt" = NOW()
+            FROM locked_rows lr
+            WHERE sr."stageId" = lr."stageId"
+                AND sr."id" = lr."id"
+                AND lr.stage_rank <= ${maxStage}
+            RETURNING DISTINCT sr."stageId";
+        `;
+        return stageIds.map(v => v.stageId);
+    }
 
-        await this.client.transaction(ctx, async (tx: PrismaTx) => {
-            await tx.stagedResource.deleteMany({
-                where: {
-                    stageId: {
-                        in: stageIds,
-                    },
-                },
-            });
-        });
+    async delete(ctx: IContext, stageIds: string[]) {}
+}
+
+export class RelationshipDatastore {
+    private client: DbClient;
+
+    constructor(client: DbClient) {
+        this.client = client;
+    }
+
+    async batchUpsertStage(ctx: IContext, stageIds: string[]) {
+        if (stageIds.length === 0) {
+            return;
+        }
+
+        await this.client.prisma.$executeRaw`
+            INSERT INTO "catalog"."ResourceRelationship" (
+                "sourceId",
+                "targetId",
+                "type"
+            )
+            SELECT
+                source_sr."id" AS "sourceId",
+                target_sr."id" AS "targetId",
+                sr."type"
+            FROM "stage"."StagedRelationship" sr
+            INNER JOIN "stage"."StageResource" source_sr
+                ON sr."sourceStageId" = source_sr."id"
+                    AND sr."stageId" = source_sr."stageId"
+            INNER JOIN "stage"."StageResource" target_sr
+                ON sr."targetStageId" = target_sr."id"
+                    AND sr."stageId" = target_sr."stageId"
+            WHERE sr."stageId" IN (${Prisma.join(stageIds)})
+            ON CONFLICT ("sourceId", "targetId")
+            DO NOTHING;
+        `;
     }
 }

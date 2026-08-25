@@ -10,6 +10,8 @@
  */
 export type * from './models/System'
 export type * from './models/Resource'
-export type * from './models/Stage'
-export type * from './models/StagedResource'
+export type * from './models/ResourceRelationship'
+export type * from './models/StageResource'
+export type * from './models/StagedRelationship'
+export type * from './models/StagedSystem'
 export type * from './commonInputTypes'

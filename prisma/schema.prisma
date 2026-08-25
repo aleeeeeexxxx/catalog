@@ -16,12 +16,12 @@ datasource db {
 }
 
 model System {
-  id       String @id @db.VarChar(32)
-  tenantId String @db.VarChar(32) // RLS
+  id String @id @db.VarChar(32)
 
   createdAt DateTime  @default(now())
   deletedAt DateTime?
 
+  tenantId         String @db.VarChar(32) // RLS
   type             String @db.VarChar(256)
   uniqueIdentifier String @db.VarChar(256)
 
@@ -32,21 +32,19 @@ model System {
 }
 
 model Resource {
-  id       String @id @db.VarChar(32)
-  tenantId String @db.VarChar(32) // RLS
+  id String @id @db.VarChar(32)
 
   createdAt DateTime  @default(now())
-  createdBy String?
+  createdBy String?   @db.VarChar(256)
   deletedAt DateTime?
-  deletedBy String?
+  deletedBy String?   @db.VarChar(256)
 
-  version String @db.VarChar(256)
-
+  systemId         String
+  tenantId         String @db.VarChar(32)
   nativeUniqueName String @db.VarChar(256)
-  name             String @db.VarChar(256)
-  desc             String
+  version          Int    @default(0)
 
-  systemId String
+  metadata String
 
   // Prisma does not support partial unique index
   // manually [add] WHERE "deletedAt" IS NULL
@@ -54,26 +52,57 @@ model Resource {
   @@schema("catalog")
 }
 
-model Stage {
-  id String @id @db.VarChar(32)
+model ResourceRelationship {
+  sourceId String @db.VarChar(32)
+  targetId String @db.VarChar(32)
+  type     String @db.VarChar(256)
 
-  stageAt DateTime @default(now())
+  @@id([sourceId, targetId])
+  @@schema("catalog")
+}
 
-  tenantId         String @db.VarChar(32)
-  systemId         String @db.VarChar(32)
+model StageResource {
+  stageId String @db.VarChar(32)
+  id      String @db.VarChar(32)
+
+  stageAt       DateTime  @default(now())
+  startIngestAt DateTime?
+  deletedBy     String?
+
+  tenantId String @db.VarChar(32)
+
   nativeUniqueName String @db.VarChar(256)
-  version          String @db.VarChar(256)
+  version          Int    @default(0)
 
-  deletedBy String?
+  systemType         String @db.VarChar(256)
+  systemTypeUniqueId String @db.VarChar(256)
 
+  metadata String
+
+  @@id([stageId, id])
   @@schema("stage")
 }
 
-model StagedResource {
-  stageId String @id @db.VarChar(32)
+model StagedRelationship {
+  stageId String @db.VarChar(32)
 
-  name String @db.VarChar(256)
-  desc String
+  tenantId String @db.VarChar(32)
+
+  sourceStageId String @db.VarChar(32)
+  targetStageId String @db.VarChar(32)
+  type          String @db.VarChar(256)
+
+  @@id([stageId, sourceStageId, targetStageId, type])
+  @@schema("stage")
+}
+
+model StagedSystem {
+  stageId         String @db.VarChar(32)
+  stageResourceId String @id
+
+  tenantId         String @db.VarChar(32)
+  type             String @db.VarChar(256)
+  uniqueIdentifier String @db.VarChar(256)
 
   @@schema("stage")
 }
