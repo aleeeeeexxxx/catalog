@@ -5,7 +5,7 @@
 export interface IResource {
     nativeUniqueName: string;
     version: number;
-    metadata: string;
+    metadata: any;
 }
 
 export const enum Source {
@@ -29,8 +29,8 @@ export interface IStageResource {
 
     metadata: any;
 
-    parents: IStageResource[];
-    children: IStageResource[];
+    parents?: IStageResource[];
+    children?: IStageResource[];
 }
 
 export const VERSION_REFERENCED_ONLY = -1;

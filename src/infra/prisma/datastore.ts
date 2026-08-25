@@ -3,7 +3,7 @@
  */
 
 import { IContext } from '../../context';
-import { IResource, ISystem, Source } from './artifacts';
+import { IResource, ISystem } from './artifacts';
 import { DbClient, PrismaTx } from './client';
 import { Prisma } from '../../../generated/prisma/client';
 import { getLogger } from '../../logger';
@@ -12,16 +12,6 @@ import { Generate32UUID } from '../../utils/uuid';
 const logger = getLogger(__filename);
 
 const errorNotExist = new Error('target not exist');
-
-export interface IResourceToUpdate {
-    systemUniqueIdentifier: string;
-    resource: IResource;
-    source?: Source;
-}
-
-export interface IResourceUpdateResult {
-    id?: string;
-}
 
 export class ResourceDatastore {
     private client: DbClient;
@@ -49,104 +39,8 @@ export class ResourceDatastore {
                 return {
                     nativeUniqueName: resource.nativeUniqueName,
                     version: resource.version,
-                    metadata: resource.metadata,
+                    metadata: JSON.parse(resource.metadata),
                 };
-            },
-            tx
-        );
-    }
-
-    async softDelete(ctx: IContext, id: string, tx?: PrismaTx) {
-        return await this.client.transaction(
-            ctx,
-            async (tx: PrismaTx) => {
-                try {
-                    await tx.resource.update({
-                        where: {
-                            id,
-                            deletedAt: null,
-                        },
-                        data: { deletedAt: new Date() },
-                    });
-                } catch (error) {
-                    // P2025: Record not found
-                    if (
-                        error instanceof Prisma.PrismaClientKnownRequestError &&
-                        error.code === 'P2025'
-                    ) {
-                        errorNotExist;
-                    }
-                    throw error;
-                }
-            },
-            tx
-        );
-    }
-
-    async createOrUpdateResource(
-        ctx: IContext,
-        resource: IResourceToUpdate,
-        tx?: PrismaTx
-    ): Promise<IResourceUpdateResult> {
-        logger.debug(ctx, `create or update resource. name=${resource.resource.nativeUniqueName}`);
-
-        return await this.client.transaction(
-            ctx,
-            async (tx: PrismaTx) => {
-                const system = await tx.system.findFirst({
-                    where: {
-                        tenantId: ctx.tenantId,
-                        uniqueIdentifier: resource.systemUniqueIdentifier,
-                        deletedAt: null,
-                    },
-                });
-
-                if (!system) {
-                    logger.debug(ctx, `system ${resource.systemUniqueIdentifier} does not exist`);
-                    return {};
-                }
-
-                const existing = await tx.resource.findFirst({
-                    where: {
-                        systemId: system.id,
-                        nativeUniqueName: resource.resource.nativeUniqueName,
-                        deletedAt: null,
-                    },
-                });
-
-                if (!existing) {
-                    logger.debug(ctx, `resource does not exist, creating new...`);
-                    const created = await tx.resource.create({
-                        data: {
-                            id: Generate32UUID(),
-                            systemId: system.id,
-                            nativeUniqueName: resource.resource.nativeUniqueName,
-                            metadata: resource.resource.metadata,
-                            version: resource.resource.version,
-                            tenantId: ctx.tenantId,
-                        },
-                    });
-                    return { id: created.id };
-                }
-
-                logger.debug(ctx, `resource exists, updating current based on version`);
-
-                const incomingVersion = resource.resource.version;
-                if (existing.version < incomingVersion) {
-                    logger.debug(ctx, `current version outdated, updating new one`);
-
-                    const updated = await tx.resource.update({
-                        where: { id: existing.id },
-                        data: {
-                            metadata: resource.resource.metadata,
-                            version: incomingVersion,
-                        },
-                    });
-                    return { id: updated.id };
-                }
-
-                logger.debug(ctx, `current version ahead, skip updating`);
-                return { id: existing.id };
             },
             tx
         );
