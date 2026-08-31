@@ -13,8 +13,16 @@ export interface IExtractedResource {
     children: IExtractedMetadata[];
 }
 
+export interface IBrowseResult {
+    nativeUniqueName: string;
+    version: number;
+}
+
 export interface IExtractor {
     extract(ctx: IContext, nativeUniqueName: string): Promise<IExtractedResource>;
+
+    browse(ctx: IContext, systemUniqueId: string): Promise<IBrowseResult[]>;
+    extractBatch(ctx: IContext, nativeUniqueName: string[]): Promise<IExtractedResource[]>;
 }
 
 export function getExtractorBySystemType(
