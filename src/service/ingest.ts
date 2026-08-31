@@ -1,4 +1,4 @@
-import { IContext } from '../context';
+import { createNewContext, IContext } from '../context';
 import {
     IStageResource,
     Relationship,
@@ -10,8 +10,14 @@ import {
 import { getLogger } from '../logger';
 import { Prisma } from '../../generated/prisma/client';
 import { Generate32UUID } from '../utils/uuid';
+import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
+import { CountAndTimerBasedNotifier, RedisClient } from '../infra';
 
 const logger = getLogger(__filename);
+
+const STAGE_NOTIFIER_NAME = 'stage_notifier';
+const MAX_WAITING_STAGE = 50;
+const DELAY = 60; // 1 min
 
 export class IngestService {
     private stageStore: StageDatastore;
@@ -19,16 +25,34 @@ export class IngestService {
     private systemStore: SystemDatastore;
     private relationshipStore: RelationshipDatastore;
 
+    private taskq: AsyncJobService;
+    private notifier: CountAndTimerBasedNotifier;
+
     constructor(
         stageStore: StageDatastore,
         resourceStore: ResourceDatastore,
         systemStore: SystemDatastore,
-        relationshipStore: RelationshipDatastore
+        relationshipStore: RelationshipDatastore,
+        taskq: AsyncJobService,
+        redis: RedisClient
     ) {
         this.stageStore = stageStore;
         this.resourceStore = resourceStore;
         this.systemStore = systemStore;
         this.relationshipStore = relationshipStore;
+
+        this.taskq = taskq;
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.INGEST,
+            handler: this.asyncIngestTaskHandler.bind(this),
+        });
+
+        this.notifier = new CountAndTimerBasedNotifier(
+            redis,
+            MAX_WAITING_STAGE,
+            DELAY,
+            this.enqueueIngestTask.bind(this)
+        );
     }
 
     async stage(ctx: IContext, objects: IStageResource[]): Promise<string[]> {
@@ -137,6 +161,7 @@ export class IngestService {
         });
 
         await this.stageStore.stage(ctx, resources, relationship, systems);
+        await this.notifier.add(STAGE_NOTIFIER_NAME, objects.length);
 
         return stageIds;
     }
@@ -154,5 +179,19 @@ export class IngestService {
 
         await this.stageStore.delete(ctx, stageIds);
         return stageIds;
+    }
+
+    private async enqueueIngestTask() {
+        const ctx = createNewContext(IngestService.name);
+        const jobId = Generate32UUID();
+
+        await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, jobId, ctx);
+    }
+
+    private async asyncIngestTaskHandler(param: any) {
+        const ctx = param as IContext;
+        const maxStage = MAX_WAITING_STAGE + 10;
+
+        await this.ingest(ctx, maxStage);
     }
 }
