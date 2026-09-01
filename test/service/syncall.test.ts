@@ -13,6 +13,7 @@ import { SyncAllService, SyncStatus } from '../../src/service/syncall';
 import { sleep } from '../../src/utils/time';
 import { getRedisClient } from '../setup';
 import { getExtractorBySystemType } from '../../src/extractor';
+import { createAutoMock } from '../mockHelper';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
@@ -31,34 +32,16 @@ let mockStageStore: jest.Mocked<StageDatastore>;
 let mockRelationshipStore: jest.Mocked<RelationshipDatastore>;
 let mockExtractor: jest.Mocked<IExtractor>;
 
-describe('Sync all service', () => {
+describe('Sync all workflow', () => {
     beforeAll(async () => {
         redis = await getRedisClient();
-
-        // Create real taskq instance
         taskq = new AsyncJobService(redis);
 
         // Create mocks for other dependencies
-        mockResourceStore = {
-            get: jest.fn(),
-            getResourceVersions: jest.fn(),
-        } as any;
-
-        mockSystemStore = {
-            get: jest.fn(),
-            batchUpsertFromStage: jest.fn(),
-        } as any;
-
-        mockStageStore = {
-            stage: jest.fn(),
-            getPendingStages: jest.fn(),
-            delete: jest.fn(),
-            countStagesByWorkflowId: jest.fn(),
-        } as any;
-
-        mockRelationshipStore = {
-            batchUpsertStage: jest.fn(),
-        } as any;
+        mockResourceStore = createAutoMock(ResourceDatastore);
+        mockSystemStore = createAutoMock(SystemDatastore);
+        mockStageStore = createAutoMock(StageDatastore);
+        mockRelationshipStore = createAutoMock(RelationshipDatastore);
 
         // Create mock extractor
         mockExtractor = {

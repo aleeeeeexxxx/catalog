@@ -2,7 +2,6 @@ import { createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
 import { IStageResource, ISystem, RedisClient, ResourceDatastore, SystemDatastore } from '../infra';
 import { getLogger } from '../logger';
-import { SECOND } from '../utils/time';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
 import { IngestService } from './ingest';
@@ -59,7 +58,7 @@ export class SyncAllService {
             handler: this.handleExtract.bind(this),
         });
         this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.INGEST,
+            uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
             handler: this.handleMonitorIngest.bind(this),
         });
 
@@ -82,10 +81,10 @@ export class SyncAllService {
             target
         );
 
-        logger.info(ctx, `Workflow created: ${workflowId}`);
+        logger.info(ctx, `Workflow created, workflow id=${workflowId}`);
 
         const jobId = await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
-        logger.info(ctx, `Browse job pushed: ${jobId}`);
+        logger.info(ctx, `Browse job pushed, jobid=${jobId}`);
 
         return workflowId;
     }

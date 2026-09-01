@@ -45,7 +45,7 @@ export class AsyncJobService {
     }
 
     async push(ctx: IContext, id: AsyncTaskUniqueId, param: any, opts?: JobsOptions) {
-        logger.info(ctx, `enqueue task, task unique id=${id}`);
+        logger.debug(ctx, `enqueue task, task unique id=${id}`);
 
         const job = {
             id,
@@ -67,7 +67,7 @@ export class AsyncJobService {
         try {
             await taskDesc.handler(task.param);
         } catch (err) {
-            logger.error('failed to run job');
+            logger.error({ err }, 'failed to run job');
         }
     }
 }

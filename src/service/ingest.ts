@@ -69,6 +69,8 @@ export class IngestService {
     }
 
     async stage(ctx: IContext, objects: IStageResource[]): Promise<string[]> {
+        logger.info(ctx, `staging resources, length=${objects.length}`);
+
         const stageIds: string[] = [];
 
         const resources: Prisma.StageResourceCreateManyInput[] = [];
@@ -184,12 +186,20 @@ export class IngestService {
     }
 
     async ingest(ctx: IContext, maxStage: number) {
+        logger.info(ctx, `Ingesting resources, maxStage=${maxStage}`);
         const stages = await this.stageStore.getPendingStages(ctx, maxStage);
 
         const stageIds = stages.map(stage => stage.stageId);
+        logger.debug(ctx, `Pending stage resources, stagedIds=${JSON.stringify(stageIds)}`);
         if (stageIds.length === 0) {
+            logger.info(ctx, `No staged resources got, skip ingesting`);
             return [];
         }
+
+        logger.info(
+            ctx,
+            `Staged resources to ingest, length=${stageIds.length}, stagedIds=${JSON.stringify(stageIds)}`
+        );
 
         await this.systemStore.batchUpsertFromStage(ctx, stageIds);
         await this.resourceStore.batchUpsertStage(ctx, stageIds);
@@ -215,6 +225,8 @@ export class IngestService {
 
     private async enqueueIngestTask() {
         const ctx = createNewContext(IngestService.name);
+        logger.debug(ctx, `enqueue ingest task`);
+
         await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, null);
     }
 
