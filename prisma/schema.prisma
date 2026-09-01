@@ -62,8 +62,9 @@ model ResourceRelationship {
 }
 
 model StageResource {
-  stageId String @db.VarChar(32)
-  id      String @db.VarChar(32)
+  stageId    String  @db.VarChar(32)
+  id         String  @db.VarChar(32)
+  workflowId String? @db.VarChar(32)
 
   stageAt       DateTime  @default(now())
   startIngestAt DateTime?

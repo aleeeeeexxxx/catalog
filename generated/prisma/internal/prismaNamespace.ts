@@ -945,6 +945,7 @@ export type ResourceRelationshipScalarFieldEnum = (typeof ResourceRelationshipSc
 export const StageResourceScalarFieldEnum = {
   stageId: 'stageId',
   id: 'id',
+  workflowId: 'workflowId',
   stageAt: 'stageAt',
   startIngestAt: 'startIngestAt',
   deletedBy: 'deletedBy',
