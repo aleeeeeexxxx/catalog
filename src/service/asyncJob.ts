@@ -30,11 +30,11 @@ export class AsyncJobService {
 
     private jobs: Map<AsyncTaskUniqueId, IAsyncTaskDescription>;
 
-    constructor(redis: RedisClient) {
+    constructor(redis: RedisClient, concurrency: number = 10) {
         this.queue = new Queue(CATALOG_TASK_QUEUE, { connection: redis });
         this.worker = new Worker(CATALOG_TASK_QUEUE, this.handleJob.bind(this), {
             connection: redis,
-            concurrency: 10,
+            concurrency: concurrency,
         });
 
         this.jobs = new Map();
@@ -51,7 +51,8 @@ export class AsyncJobService {
             id,
             param,
         } as IBulkTask;
-        await this.queue.add(CATALOG_TASK_QUEUE, job, opts);
+        const created = await this.queue.add(CATALOG_TASK_QUEUE, job, opts);
+        return created.id;
     }
 
     private async handleJob(job: Job) {

@@ -82,7 +82,8 @@ export class SyncAllService {
 
         logger.info(ctx, `Workflow created: ${workflowId}`);
 
-        await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
+        const jobId = await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
+        logger.info(ctx, `Browse job pushed: ${jobId}`);
 
         return workflowId;
     }
