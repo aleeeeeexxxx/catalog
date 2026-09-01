@@ -97,6 +97,20 @@ export class ResourceDatastore {
                 "deletedBy" = EXCLUDED."deletedBy";
         `;
     }
+
+    async getResourceVersions(
+        ctx: IContext
+    ): Promise<{ nativeUniqueName: string; version: number }[]> {
+        return await this.client.prisma.resource.findMany({
+            where: {
+                tenantId: ctx.tenantId,
+            },
+            select: {
+                nativeUniqueName: true,
+                version: true,
+            },
+        });
+    }
 }
 
 export class SystemDatastore {

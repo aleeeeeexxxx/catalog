@@ -8,6 +8,10 @@ const CATALOG_TASK_QUEUE = 'catalog_task_queue';
 
 export enum AsyncTaskUniqueId {
     INGEST = 'ingest',
+    BROWSE = 'browse',
+    SNAPSHOT = 'snapshot',
+    EXTRACT = 'extract',
+    MONITOR_INGEST = 'monitoring',
 }
 
 interface IBulkTask {
@@ -40,14 +44,14 @@ export class AsyncJobService {
         this.jobs.set(job.uniqueId, job);
     }
 
-    async push(ctx: IContext, id: AsyncTaskUniqueId, jobId: string, param: any) {
-        logger.info(ctx, `enqueue task, task unique id=${id}, jobId=${jobId}`);
+    async push(ctx: IContext, id: AsyncTaskUniqueId, param: any) {
+        logger.info(ctx, `enqueue task, task unique id=${id}`);
 
         const job = {
             id,
             param,
         } as IBulkTask;
-        await this.queue.add(CATALOG_TASK_QUEUE, job, { jobId });
+        await this.queue.add(CATALOG_TASK_QUEUE, job);
     }
 
     private async handleJob(job: Job) {

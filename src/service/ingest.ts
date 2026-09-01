@@ -87,6 +87,7 @@ export class IngestService {
                 metadata: JSON.stringify(obj.metadata),
                 systemType: obj.system.type,
                 systemTypeUniqueId: obj.system.uniqueIdentifier,
+                deletedBy: obj.deletedBy,
             });
 
             enqueueSystem({
@@ -183,13 +184,11 @@ export class IngestService {
 
     private async enqueueIngestTask() {
         const ctx = createNewContext(IngestService.name);
-        const jobId = Generate32UUID();
-
-        await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, jobId, ctx);
+        await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, null);
     }
 
-    private async asyncIngestTaskHandler(param: any) {
-        const ctx = param as IContext;
+    private async asyncIngestTaskHandler(_param: any) {
+        const ctx = createNewContext(IngestService.name);
         const maxStage = MAX_WAITING_STAGE + 10;
 
         await this.ingest(ctx, maxStage);
