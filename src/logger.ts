@@ -13,6 +13,7 @@ const defaultLogger = pino({
             colorize: true,
             translateTime: 'SYS:standard',
             ignore: 'pid,hostname',
+            sync: true,
         },
     },
 });

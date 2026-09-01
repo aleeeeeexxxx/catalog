@@ -237,8 +237,13 @@ export class StageDatastore {
         });
     }
 
-    async getPendingStages(ctx: IContext, maxStage: number): Promise<string[]> {
-        const stageIds = await this.client.prisma.$queryRaw<{ stageId: string }[]>`
+    async getPendingStages(
+        ctx: IContext,
+        maxStage: number
+    ): Promise<Array<{ stageId: string; workflowId: string }>> {
+        const stages = await this.client.prisma.$queryRaw<
+            { stageId: string; workflowId: string }[]
+        >`
             WITH to_lock AS (
                 SELECT "stageId", "id"
                 FROM "stage"."StageResource"
@@ -258,11 +263,11 @@ export class StageDatastore {
                 WHERE sr."stageId" = r."stageId"
                     AND sr."id" = r."id"
                     AND r.stage_rank <= ${maxStage}
-                RETURNING sr."stageId"
+                RETURNING sr."stageId", sr."workflowId"
             )
-            SELECT DISTINCT "stageId" FROM updated;
+            SELECT DISTINCT "stageId", "workflowId" FROM updated;
         `;
-        return stageIds.map(v => v.stageId);
+        return stages;
     }
 
     async delete(ctx: IContext, stageIds: string[]) {}

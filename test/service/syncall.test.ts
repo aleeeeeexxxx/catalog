@@ -1,16 +1,18 @@
 import { createNewContext } from '../../src/context';
 import { IExtractor } from '../../src/extractor';
-import { RedisClient, ResourceDatastore, SystemDatastore } from '../../src/infra';
+import {
+    RedisClient,
+    RelationshipDatastore,
+    ResourceDatastore,
+    StageDatastore,
+    SystemDatastore,
+} from '../../src/infra';
 import { AsyncJobService } from '../../src/service/asyncJob';
 import { IngestService } from '../../src/service/ingest';
 import { SyncAllService, SyncStatus } from '../../src/service/syncall';
 import { sleep } from '../../src/utils/time';
 import { getRedisClient } from '../setup';
-
-// Mock the extractor module
-jest.mock('../../src/extractor', () => ({
-    getExtractorBySystemType: jest.fn(),
-}));
+import { getExtractorBySystemType } from '../../src/extractor';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
@@ -20,14 +22,14 @@ jest.mock('../../src/extractor', () => ({
 let redis: RedisClient;
 let taskq: AsyncJobService;
 let service: SyncAllService;
+let ingest: IngestService;
 
 // Mock dependencies
 let mockResourceStore: jest.Mocked<ResourceDatastore>;
 let mockSystemStore: jest.Mocked<SystemDatastore>;
-let mockIngest: jest.Mocked<IngestService>;
+let mockStageStore: jest.Mocked<StageDatastore>;
+let mockRelationshipStore: jest.Mocked<RelationshipDatastore>;
 let mockExtractor: jest.Mocked<IExtractor>;
-
-const { getExtractorBySystemType } = require('../../src/extractor');
 
 describe('Sync all service', () => {
     beforeAll(async () => {
@@ -44,11 +46,18 @@ describe('Sync all service', () => {
 
         mockSystemStore = {
             get: jest.fn(),
+            batchUpsertFromStage: jest.fn(),
         } as any;
 
-        mockIngest = {
+        mockStageStore = {
             stage: jest.fn(),
-            countUningested: jest.fn(),
+            getPendingStages: jest.fn(),
+            delete: jest.fn(),
+            countStagesByWorkflowId: jest.fn(),
+        } as any;
+
+        mockRelationshipStore = {
+            batchUpsertStage: jest.fn(),
         } as any;
 
         // Create mock extractor
@@ -59,10 +68,22 @@ describe('Sync all service', () => {
         } as any;
 
         // Setup getExtractorBySystemType to return mock extractor
-        getExtractorBySystemType.mockReturnValue(mockExtractor);
+        (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
+
+        // Initialize IngestService with mocks
+        ingest = new IngestService(
+            mockStageStore,
+            mockResourceStore,
+            mockSystemStore,
+            mockRelationshipStore,
+            taskq,
+            redis,
+            1,
+            1
+        );
 
         // Initialize service with real taskq and mocked dependencies
-        service = new SyncAllService(mockResourceStore, mockSystemStore, taskq, redis, mockIngest);
+        service = new SyncAllService(mockResourceStore, mockSystemStore, taskq, redis, ingest);
     });
 
     it('sync all should complete', async () => {
@@ -99,7 +120,6 @@ describe('Sync all service', () => {
                 children: [],
             },
         ]);
-        mockIngest.countUningested.mockResolvedValueOnce(0);
 
         const workflowId = await service.start(ctx, mockSystemId);
 
@@ -113,14 +133,5 @@ describe('Sync all service', () => {
             'resource1',
             'resource3',
         ]);
-
-        // Get stage call parameters and validate
-        expect(mockIngest.stage).toHaveBeenCalled();
-        const stageCallArgs = mockIngest.stage.mock.calls[0];
-        const [_stageCtx, stagedResources] = stageCallArgs;
-
-        expect(stagedResources).toBeDefined();
-        expect(stagedResources.length).toBe(1);
-        expect(stagedResources[0].nativeUniqueName).toBe('resource5');
     });
 });

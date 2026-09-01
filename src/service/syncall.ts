@@ -49,8 +49,6 @@ export class SyncAllService {
         this.systemStore = systemStore;
         this.workflow = new SyncAllWorkflow(redis);
 
-        this.ingest = ingest;
-
         this.taskq = taskq;
         this.taskq.register({
             uniqueId: AsyncTaskUniqueId.BROWSE,
@@ -64,6 +62,9 @@ export class SyncAllService {
             uniqueId: AsyncTaskUniqueId.INGEST,
             handler: this.handleMonitorIngest.bind(this),
         });
+
+        this.ingest = ingest;
+        this.ingest.setIngestCallback(this.createMonitorIngestTask.bind(this));
     }
 
     async start(ctx: IContext, systemId: string): Promise<string> {
@@ -167,27 +168,24 @@ export class SyncAllService {
             mapExtractedResourceToStageResource(resources, ctx.tenantId, workflowId)
         );
 
-        await this.sleepAndMonitorIngest(ctx, workflowId);
-
         logger.info(ctx, 'Extract completed');
     }
 
-    async handleMonitorIngest(workflowId: string) {
-        const desc = await this.workflow.getWorkflowDescription(workflowId);
-        if (!desc) {
-            logger.error({ workflowId }, 'Workflow description not found');
-            return;
-        }
-
-        const ctx = createNewContext(desc.tenantId);
-        const left = await this.ingest.countUningested(ctx, workflowId);
-
-        if (left === 0) {
-            await this.workflow.setWorkflowStatus(workflowId, SyncStatus.COMPLETED);
-            logger.info(ctx, 'Workflow completed');
-        } else {
-            logger.info(ctx, `Ingest monitoring: ${left} remaining`);
-            await this.sleepAndMonitorIngest(ctx, workflowId);
+    async handleMonitorIngest(workflowIds: string[]) {
+        for (let workflowId in workflowIds) {
+            const desc = await this.workflow.getWorkflowDescription(workflowId);
+            if (!desc) {
+                logger.error({ workflowId }, 'Workflow description not found');
+                return;
+            }
+            const ctx = createNewContext(desc.tenantId);
+            const left = await this.ingest.countUningested(ctx, workflowId);
+            if (left === 0) {
+                await this.workflow.setWorkflowStatus(workflowId, SyncStatus.COMPLETED);
+                logger.info(ctx, 'Workflow completed');
+            } else {
+                logger.info(ctx, `Ingest monitoring: ${left} remaining`);
+            }
         }
     }
 
@@ -247,10 +245,9 @@ export class SyncAllService {
         await this.ingest.stage(ctx, stageDeleted);
     }
 
-    private async sleepAndMonitorIngest(ctx: IContext, workflowId: string) {
-        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
-            delay: 60 * SECOND,
-        });
+    private async createMonitorIngestTask(workflowIds: string[]) {
+        const ctx = createNewContext('createMonitorIngestTask');
+        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowIds);
     }
 }
 
