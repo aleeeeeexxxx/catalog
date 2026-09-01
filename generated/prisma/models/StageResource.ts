@@ -37,6 +37,7 @@ export type StageResourceSumAggregateOutputType = {
 export type StageResourceMinAggregateOutputType = {
   stageId: string | null
   id: string | null
+  workflowId: string | null
   stageAt: Date | null
   startIngestAt: Date | null
   deletedBy: string | null
@@ -51,6 +52,7 @@ export type StageResourceMinAggregateOutputType = {
 export type StageResourceMaxAggregateOutputType = {
   stageId: string | null
   id: string | null
+  workflowId: string | null
   stageAt: Date | null
   startIngestAt: Date | null
   deletedBy: string | null
@@ -65,6 +67,7 @@ export type StageResourceMaxAggregateOutputType = {
 export type StageResourceCountAggregateOutputType = {
   stageId: number
   id: number
+  workflowId: number
   stageAt: number
   startIngestAt: number
   deletedBy: number
@@ -89,6 +92,7 @@ export type StageResourceSumAggregateInputType = {
 export type StageResourceMinAggregateInputType = {
   stageId?: true
   id?: true
+  workflowId?: true
   stageAt?: true
   startIngestAt?: true
   deletedBy?: true
@@ -103,6 +107,7 @@ export type StageResourceMinAggregateInputType = {
 export type StageResourceMaxAggregateInputType = {
   stageId?: true
   id?: true
+  workflowId?: true
   stageAt?: true
   startIngestAt?: true
   deletedBy?: true
@@ -117,6 +122,7 @@ export type StageResourceMaxAggregateInputType = {
 export type StageResourceCountAggregateInputType = {
   stageId?: true
   id?: true
+  workflowId?: true
   stageAt?: true
   startIngestAt?: true
   deletedBy?: true
@@ -218,6 +224,7 @@ export type StageResourceGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type StageResourceGroupByOutputType = {
   stageId: string
   id: string
+  workflowId: string | null
   stageAt: Date
   startIngestAt: Date | null
   deletedBy: string | null
@@ -255,6 +262,7 @@ export type StageResourceWhereInput = {
   NOT?: Prisma.StageResourceWhereInput | Prisma.StageResourceWhereInput[]
   stageId?: Prisma.StringFilter<"StageResource"> | string
   id?: Prisma.StringFilter<"StageResource"> | string
+  workflowId?: Prisma.StringNullableFilter<"StageResource"> | string | null
   stageAt?: Prisma.DateTimeFilter<"StageResource"> | Date | string
   startIngestAt?: Prisma.DateTimeNullableFilter<"StageResource"> | Date | string | null
   deletedBy?: Prisma.StringNullableFilter<"StageResource"> | string | null
@@ -269,6 +277,7 @@ export type StageResourceWhereInput = {
 export type StageResourceOrderByWithRelationInput = {
   stageId?: Prisma.SortOrder
   id?: Prisma.SortOrder
+  workflowId?: Prisma.SortOrderInput | Prisma.SortOrder
   stageAt?: Prisma.SortOrder
   startIngestAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -287,6 +296,7 @@ export type StageResourceWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.StageResourceWhereInput | Prisma.StageResourceWhereInput[]
   stageId?: Prisma.StringFilter<"StageResource"> | string
   id?: Prisma.StringFilter<"StageResource"> | string
+  workflowId?: Prisma.StringNullableFilter<"StageResource"> | string | null
   stageAt?: Prisma.DateTimeFilter<"StageResource"> | Date | string
   startIngestAt?: Prisma.DateTimeNullableFilter<"StageResource"> | Date | string | null
   deletedBy?: Prisma.StringNullableFilter<"StageResource"> | string | null
@@ -301,6 +311,7 @@ export type StageResourceWhereUniqueInput = Prisma.AtLeast<{
 export type StageResourceOrderByWithAggregationInput = {
   stageId?: Prisma.SortOrder
   id?: Prisma.SortOrder
+  workflowId?: Prisma.SortOrderInput | Prisma.SortOrder
   stageAt?: Prisma.SortOrder
   startIngestAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -323,6 +334,7 @@ export type StageResourceScalarWhereWithAggregatesInput = {
   NOT?: Prisma.StageResourceScalarWhereWithAggregatesInput | Prisma.StageResourceScalarWhereWithAggregatesInput[]
   stageId?: Prisma.StringWithAggregatesFilter<"StageResource"> | string
   id?: Prisma.StringWithAggregatesFilter<"StageResource"> | string
+  workflowId?: Prisma.StringNullableWithAggregatesFilter<"StageResource"> | string | null
   stageAt?: Prisma.DateTimeWithAggregatesFilter<"StageResource"> | Date | string
   startIngestAt?: Prisma.DateTimeNullableWithAggregatesFilter<"StageResource"> | Date | string | null
   deletedBy?: Prisma.StringNullableWithAggregatesFilter<"StageResource"> | string | null
@@ -337,6 +349,7 @@ export type StageResourceScalarWhereWithAggregatesInput = {
 export type StageResourceCreateInput = {
   stageId: string
   id: string
+  workflowId?: string | null
   stageAt?: Date | string
   startIngestAt?: Date | string | null
   deletedBy?: string | null
@@ -351,6 +364,7 @@ export type StageResourceCreateInput = {
 export type StageResourceUncheckedCreateInput = {
   stageId: string
   id: string
+  workflowId?: string | null
   stageAt?: Date | string
   startIngestAt?: Date | string | null
   deletedBy?: string | null
@@ -365,6 +379,7 @@ export type StageResourceUncheckedCreateInput = {
 export type StageResourceUpdateInput = {
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startIngestAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -379,6 +394,7 @@ export type StageResourceUpdateInput = {
 export type StageResourceUncheckedUpdateInput = {
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startIngestAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -393,6 +409,7 @@ export type StageResourceUncheckedUpdateInput = {
 export type StageResourceCreateManyInput = {
   stageId: string
   id: string
+  workflowId?: string | null
   stageAt?: Date | string
   startIngestAt?: Date | string | null
   deletedBy?: string | null
@@ -407,6 +424,7 @@ export type StageResourceCreateManyInput = {
 export type StageResourceUpdateManyMutationInput = {
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startIngestAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -421,6 +439,7 @@ export type StageResourceUpdateManyMutationInput = {
 export type StageResourceUncheckedUpdateManyInput = {
   stageId?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stageAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startIngestAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -440,6 +459,7 @@ export type StageResourceStageIdIdCompoundUniqueInput = {
 export type StageResourceCountOrderByAggregateInput = {
   stageId?: Prisma.SortOrder
   id?: Prisma.SortOrder
+  workflowId?: Prisma.SortOrder
   stageAt?: Prisma.SortOrder
   startIngestAt?: Prisma.SortOrder
   deletedBy?: Prisma.SortOrder
@@ -458,6 +478,7 @@ export type StageResourceAvgOrderByAggregateInput = {
 export type StageResourceMaxOrderByAggregateInput = {
   stageId?: Prisma.SortOrder
   id?: Prisma.SortOrder
+  workflowId?: Prisma.SortOrder
   stageAt?: Prisma.SortOrder
   startIngestAt?: Prisma.SortOrder
   deletedBy?: Prisma.SortOrder
@@ -472,6 +493,7 @@ export type StageResourceMaxOrderByAggregateInput = {
 export type StageResourceMinOrderByAggregateInput = {
   stageId?: Prisma.SortOrder
   id?: Prisma.SortOrder
+  workflowId?: Prisma.SortOrder
   stageAt?: Prisma.SortOrder
   startIngestAt?: Prisma.SortOrder
   deletedBy?: Prisma.SortOrder
@@ -492,6 +514,7 @@ export type StageResourceSumOrderByAggregateInput = {
 export type StageResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   stageId?: boolean
   id?: boolean
+  workflowId?: boolean
   stageAt?: boolean
   startIngestAt?: boolean
   deletedBy?: boolean
@@ -506,6 +529,7 @@ export type StageResourceSelect<ExtArgs extends runtime.Types.Extensions.Interna
 export type StageResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   stageId?: boolean
   id?: boolean
+  workflowId?: boolean
   stageAt?: boolean
   startIngestAt?: boolean
   deletedBy?: boolean
@@ -520,6 +544,7 @@ export type StageResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types
 export type StageResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   stageId?: boolean
   id?: boolean
+  workflowId?: boolean
   stageAt?: boolean
   startIngestAt?: boolean
   deletedBy?: boolean
@@ -534,6 +559,7 @@ export type StageResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
 export type StageResourceSelectScalar = {
   stageId?: boolean
   id?: boolean
+  workflowId?: boolean
   stageAt?: boolean
   startIngestAt?: boolean
   deletedBy?: boolean
@@ -545,7 +571,7 @@ export type StageResourceSelectScalar = {
   metadata?: boolean
 }
 
-export type StageResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"stageId" | "id" | "stageAt" | "startIngestAt" | "deletedBy" | "tenantId" | "nativeUniqueName" | "version" | "systemType" | "systemTypeUniqueId" | "metadata", ExtArgs["result"]["stageResource"]>
+export type StageResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"stageId" | "id" | "workflowId" | "stageAt" | "startIngestAt" | "deletedBy" | "tenantId" | "nativeUniqueName" | "version" | "systemType" | "systemTypeUniqueId" | "metadata", ExtArgs["result"]["stageResource"]>
 
 export type $StageResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StageResource"
@@ -553,6 +579,7 @@ export type $StageResourcePayload<ExtArgs extends runtime.Types.Extensions.Inter
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     stageId: string
     id: string
+    workflowId: string | null
     stageAt: Date
     startIngestAt: Date | null
     deletedBy: string | null
@@ -987,6 +1014,7 @@ export interface Prisma__StageResourceClient<T, Null = never, ExtArgs extends ru
 export interface StageResourceFieldRefs {
   readonly stageId: Prisma.FieldRef<"StageResource", 'String'>
   readonly id: Prisma.FieldRef<"StageResource", 'String'>
+  readonly workflowId: Prisma.FieldRef<"StageResource", 'String'>
   readonly stageAt: Prisma.FieldRef<"StageResource", 'DateTime'>
   readonly startIngestAt: Prisma.FieldRef<"StageResource", 'DateTime'>
   readonly deletedBy: Prisma.FieldRef<"StageResource", 'String'>

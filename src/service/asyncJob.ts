@@ -1,4 +1,4 @@
-import { Queue, Worker, Job } from 'bullmq';
+import { Queue, Worker, Job, JobsOptions } from 'bullmq';
 import { RedisClient } from '../infra/redis/client';
 import { IContext } from '../context';
 import { getLogger } from '../logger';
@@ -44,14 +44,14 @@ export class AsyncJobService {
         this.jobs.set(job.uniqueId, job);
     }
 
-    async push(ctx: IContext, id: AsyncTaskUniqueId, param: any) {
+    async push(ctx: IContext, id: AsyncTaskUniqueId, param: any, opts?: JobsOptions) {
         logger.info(ctx, `enqueue task, task unique id=${id}`);
 
         const job = {
             id,
             param,
         } as IBulkTask;
-        await this.queue.add(CATALOG_TASK_QUEUE, job);
+        await this.queue.add(CATALOG_TASK_QUEUE, job, opts);
     }
 
     private async handleJob(job: Job) {

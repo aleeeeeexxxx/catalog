@@ -88,6 +88,7 @@ export class IngestService {
                 systemType: obj.system.type,
                 systemTypeUniqueId: obj.system.uniqueIdentifier,
                 deletedBy: obj.deletedBy,
+                workflowId: obj.workflowId,
             });
 
             enqueueSystem({
@@ -110,6 +111,7 @@ export class IngestService {
                     metadata: JSON.stringify(parent.metadata),
                     systemType: parent.system.type,
                     systemTypeUniqueId: parent.system.uniqueIdentifier,
+                    workflowId: obj.workflowId,
                 });
 
                 enqueueSystem({
@@ -141,6 +143,7 @@ export class IngestService {
                     metadata: JSON.stringify(child.metadata),
                     systemType: child.system.type,
                     systemTypeUniqueId: child.system.uniqueIdentifier,
+                    workflowId: obj.workflowId,
                 });
 
                 enqueueSystem({
@@ -180,6 +183,10 @@ export class IngestService {
 
         await this.stageStore.delete(ctx, stageIds);
         return stageIds;
+    }
+
+    async countUningested(ctx: IContext, workflowId: string): Promise<number> {
+        return this.stageStore.countStagesByWorkflowId(ctx, workflowId);
     }
 
     private async enqueueIngestTask() {

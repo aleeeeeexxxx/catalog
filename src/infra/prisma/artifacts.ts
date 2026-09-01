@@ -22,6 +22,8 @@ export interface ISystem {
 }
 
 export interface IStageResource {
+    workflowId?: string;
+
     tenantId: string;
     nativeUniqueName: string;
     version: number;

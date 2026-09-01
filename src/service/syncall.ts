@@ -1,9 +1,12 @@
 import { createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
 import { IStageResource, ISystem, RedisClient, ResourceDatastore, SystemDatastore } from '../infra';
+import { getLogger } from '../logger';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
 import { IngestService } from './ingest';
+
+const logger = getLogger(__filename);
 
 const errorSystemNotExist = new Error('system not exist');
 
@@ -53,6 +56,10 @@ export class SyncAllService {
             uniqueId: AsyncTaskUniqueId.EXTRACT,
             handler: this.handleExtract.bind(this),
         });
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.INGEST,
+            handler: this.handleMonitorIngest.bind(this),
+        });
     }
 
     async start(ctx: IContext, systemId: string): Promise<string> {
@@ -85,6 +92,7 @@ export class SyncAllService {
         );
 
         if (!extractor) {
+            // TODO: error handling
             return;
         }
 
@@ -129,7 +137,24 @@ export class SyncAllService {
 
         await this.workflow.setWorkflowStatus(workflowId, SyncStatus.INGESTING);
 
-        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId);
+        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
+            delay: 60 * 1000,
+        });
+    }
+
+    async handleMonitorIngest(workflowId: string) {
+        const desc = await this.workflow.getWorkflowDescription(workflowId);
+
+        const ctx = createNewContext(desc.tenantId);
+        const left = await this.ingest.countUningested(ctx, workflowId);
+
+        if (left === 0) {
+            await this.workflow.setWorkflowStatus(workflowId, SyncStatus.COMPLETED);
+        } else {
+            await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
+                delay: 60 * 1000,
+            });
+        }
     }
 
     async getStatus(ctx: IContext, workflowId: string): Promise<ISyncAllStatus> {

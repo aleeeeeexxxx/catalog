@@ -266,6 +266,14 @@ export class StageDatastore {
     }
 
     async delete(ctx: IContext, stageIds: string[]) {}
+
+    async countStagesByWorkflowId(ctx: IContext, workflowId: string): Promise<number> {
+        return this.client.prisma.stageResource.count({
+            where: {
+                workflowId: workflowId,
+            },
+        });
+    }
 }
 
 export class RelationshipDatastore {
