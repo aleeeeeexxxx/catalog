@@ -28,7 +28,7 @@ describe('AsyncJobService', () => {
 
         wg.add(3);
         for (let i = 0; i < 3; i++) {
-            await taskq.push(ctx, taskUniqueId, `task-${i}`, null);
+            await taskq.push(ctx, taskUniqueId, null);
         }
 
         await wg.wait();

@@ -2,6 +2,7 @@ import { createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
 import { IStageResource, ISystem, RedisClient, ResourceDatastore, SystemDatastore } from '../infra';
 import { getLogger } from '../logger';
+import { SECOND } from '../utils/time';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
 import { IngestService } from './ingest';
@@ -166,11 +167,7 @@ export class SyncAllService {
             mapExtractedResourceToStageResource(resources, ctx.tenantId, workflowId)
         );
 
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.INGESTING);
-
-        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
-            delay: 60 * 1000,
-        });
+        await this.sleepAndMonitorIngest(ctx, workflowId);
 
         logger.info(ctx, 'Extract completed');
     }
@@ -190,9 +187,7 @@ export class SyncAllService {
             logger.info(ctx, 'Workflow completed');
         } else {
             logger.info(ctx, `Ingest monitoring: ${left} remaining`);
-            await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
-                delay: 60 * 1000,
-            });
+            await this.sleepAndMonitorIngest(ctx, workflowId);
         }
     }
 
@@ -250,6 +245,12 @@ export class SyncAllService {
             };
         });
         await this.ingest.stage(ctx, stageDeleted);
+    }
+
+    private async sleepAndMonitorIngest(ctx: IContext, workflowId: string) {
+        await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowId, {
+            delay: 60 * SECOND,
+        });
     }
 }
 
