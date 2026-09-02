@@ -227,7 +227,7 @@ describe('StageDatastore', () => {
         // Verify startIngestAt was updated for the returned stageId
         const updated = await dbClient.prisma.stageResource.findMany({
             where: {
-                stageId: pendingStages[0],
+                stageId: pendingStages[0].stageId,
                 startIngestAt: { not: null },
             },
         });

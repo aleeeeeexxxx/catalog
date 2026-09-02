@@ -3,7 +3,7 @@
  */
 
 import { IContext } from '../../context';
-import { IResource, ISystem } from './artifacts';
+import { IResource, IStageSystem, ISystem } from './artifacts';
 import { DbClient, PrismaTx } from './client';
 import { Prisma } from '../../../generated/prisma/client';
 import { getLogger } from '../../logger';
@@ -99,11 +99,13 @@ export class ResourceDatastore {
     }
 
     async getResourceVersions(
-        ctx: IContext
+        ctx: IContext,
+        systemId: string
     ): Promise<{ nativeUniqueName: string; version: number }[]> {
         return await this.client.prisma.resource.findMany({
             where: {
                 tenantId: ctx.tenantId,
+                systemId: systemId,
             },
             select: {
                 nativeUniqueName: true,
@@ -120,7 +122,7 @@ export class SystemDatastore {
         this.client = client;
     }
 
-    async create(ctx: IContext, system: ISystem, tx?: PrismaTx): Promise<string> {
+    async create(ctx: IContext, system: IStageSystem, tx?: PrismaTx): Promise<string> {
         logger.debug(ctx, `create new system, name=${system.uniqueIdentifier}`);
 
         return await this.client.transaction(
@@ -186,6 +188,7 @@ export class SystemDatastore {
                 }
 
                 return {
+                    id: system.id,
                     uniqueIdentifier: system.uniqueIdentifier,
                     type: system.type,
                 };

@@ -1,6 +1,14 @@
 import { createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
-import { IStageResource, ISystem, RedisClient, ResourceDatastore, SystemDatastore } from '../infra';
+import {
+    IStageResource,
+    IStageSystem,
+    ISystem,
+    RedisClient,
+    ResourceDatastore,
+    SystemDatastore,
+    VERSION_REFERENCED_ONLY,
+} from '../infra';
 import { getLogger } from '../logger';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
@@ -113,11 +121,11 @@ export class SyncAllService {
 
         logger.info(ctx, 'Browsing resources');
 
-        const browsedResources = await extractor.browse(ctx, desc.system.uniqueIdentifier);
+        const browsedResources = await extractor.browse(ctx, desc.system.id);
 
         logger.info(ctx, `Browsed ${browsedResources.length} resources`);
 
-        const current = await this.resourceStore.getResourceVersions(ctx);
+        const current = await this.resourceStore.getResourceVersions(ctx, desc.system.id);
 
         const { deleted, outdated } = this.compareResourcesToRefresh(
             ctx,
@@ -216,9 +224,9 @@ export class SyncAllService {
             currentMap.set(res.nativeUniqueName, res.version);
         });
 
-        const browsedResources = new Set<string>();
+        const browsedResources = new Map<string, number>();
         browsed.forEach(res => {
-            browsedResources.add(res.nativeUniqueName);
+            browsedResources.set(res.nativeUniqueName, res.version);
 
             const cur = currentMap.get(res.nativeUniqueName);
             if (cur && cur >= res.version) {
@@ -228,8 +236,12 @@ export class SyncAllService {
         });
 
         current.forEach(res => {
-            if (!browsedResources.has(res.nativeUniqueName)) {
-                deleted.push(res);
+            const cur = browsedResources.get(res.nativeUniqueName);
+            if (!cur) {
+                // do not delete referenced only assets
+                if (res.version !== VERSION_REFERENCED_ONLY) {
+                    deleted.push(res);
+                }
             }
         });
 
@@ -247,7 +259,7 @@ export class SyncAllService {
                 tenantId: ctx.tenantId,
                 nativeUniqueName: res.nativeUniqueName,
                 version: res.version,
-                deletedBy: 'auto',
+                deletedBy: 'sync all',
                 system,
                 metadata: '',
                 workflowId: workflowId,

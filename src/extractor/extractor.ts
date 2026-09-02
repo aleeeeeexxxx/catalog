@@ -1,9 +1,9 @@
 import { IContext } from '../context';
-import { IResource, ISystem } from '../infra';
+import { IResource, IStageSystem } from '../infra';
 
 export interface IExtractedMetadata {
     resource: IResource;
-    system: ISystem;
+    system: IStageSystem;
 }
 
 export interface IExtractedResource {

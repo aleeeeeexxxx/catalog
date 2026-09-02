@@ -16,7 +16,13 @@ export const enum Relationship {
     dependon = 'dependon',
 }
 
-export interface ISystem {
+export interface ISystem extends IStageSystem {
+    id: string;
+}
+
+// export interface ISystem
+
+export interface IStageSystem {
     uniqueIdentifier: string;
     type: string;
 }
@@ -27,7 +33,7 @@ export interface IStageResource {
     tenantId: string;
     nativeUniqueName: string;
     version: number;
-    system: ISystem;
+    system: IStageSystem;
 
     deletedBy?: string;
     metadata: any;

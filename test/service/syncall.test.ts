@@ -7,6 +7,7 @@ import {
     ResourceDatastore,
     StageDatastore,
     SystemDatastore,
+    VERSION_REFERENCED_ONLY,
 } from '../../src/infra';
 import { AsyncJobService } from '../../src/service/asyncJob';
 import { IngestService } from '../../src/service/ingest';
@@ -117,6 +118,14 @@ describe('Sync all workflow', () => {
                     systemId: mockSystemId,
                     metadata: '{}',
                 },
+                {
+                    nativeUniqueName: 'resource6',
+                    version: VERSION_REFERENCED_ONLY,
+                    tenantId: mockTenantId,
+                    id: 'resource6',
+                    systemId: mockSystemId,
+                    metadata: '{}',
+                },
             ],
         });
 
@@ -156,5 +165,8 @@ describe('Sync all workflow', () => {
             'resource1',
             'resource4',
         ]);
+
+        const referencedOnly = await resourceStore.getResource(ctx, 'resource6');
+        expect(referencedOnly).not.toBeNull();
     });
 });
