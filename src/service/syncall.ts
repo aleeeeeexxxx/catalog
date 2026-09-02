@@ -4,6 +4,7 @@ import { IStageResource, ISystem, RedisClient, ResourceDatastore, SystemDatastor
 import { getLogger } from '../logger';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
+import { convertExtractedResourceToStage } from './autoExtraction';
 import { IngestService } from './ingest';
 
 const logger = getLogger(__filename);
@@ -164,7 +165,9 @@ export class SyncAllService {
 
         await this.ingest.stage(
             ctx,
-            mapExtractedResourceToStageResource(resources, ctx.tenantId, workflowId)
+            resources.map(extracted =>
+                convertExtractedResourceToStage(ctx.tenantId, extracted, workflowId)
+            )
         );
 
         logger.info(ctx, 'Extract completed');
@@ -257,45 +260,6 @@ export class SyncAllService {
         const ctx = createNewContext('createMonitorIngestTask');
         await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowIds);
     }
-}
-
-function mapExtractedResourceToStageResource(
-    resources: IExtractedResource[],
-    tenantId: string,
-    workflowId: string
-): IStageResource[] {
-    return resources.map(extracted => {
-        const resource: IStageResource = {
-            workflowId,
-            tenantId,
-            nativeUniqueName: extracted.metadata.resource.nativeUniqueName,
-            version: extracted.metadata.resource.version,
-            system: extracted.metadata.system,
-            metadata: extracted.metadata.resource.metadata,
-        };
-
-        if (extracted.parents && extracted.parents.length > 0) {
-            resource.parents = extracted.parents.map(parent => ({
-                tenantId,
-                nativeUniqueName: parent.resource.nativeUniqueName,
-                version: parent.resource.version,
-                system: parent.system,
-                metadata: parent.resource.metadata,
-            }));
-        }
-
-        if (extracted.children && extracted.children.length > 0) {
-            resource.children = extracted.children.map(child => ({
-                tenantId,
-                nativeUniqueName: child.resource.nativeUniqueName,
-                version: child.resource.version,
-                system: child.system,
-                metadata: child.resource.metadata,
-            }));
-        }
-
-        return resource;
-    });
 }
 
 interface IWorkflowDescription {

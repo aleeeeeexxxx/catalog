@@ -75,7 +75,7 @@ export class ResourceDatastore {
                 WHERE
                     sr."stageId" IN (${Prisma.join(stageIds)})
                     AND (
-                            sr."version" > r."version"
+                            sr."version" >= r."version"
                             OR r."version" IS NULL
                         )
             )

@@ -55,7 +55,11 @@ export class DbClient {
 
     private initLogger() {
         this.prisma.$on('query' as never, (ev: Prisma.QueryEvent) => {
-            logger.debug(`Query: ${ev.query} | Params: ${ev.params} | Duration: ${ev.duration}ms`);
+            if (ev.duration >= 1000) {
+                logger.warn(
+                    `Slow query: ${ev.query} | Params: ${ev.params} | Duration: ${ev.duration}ms`
+                );
+            }
         });
     }
 }

@@ -11,6 +11,8 @@ import { IngestService } from './ingest';
 const logger = getLogger(__filename);
 
 export interface IResourceToUpdate {
+    type: 'update' | 'delete';
+
     nativeUniqueName: string;
     version: number;
 
@@ -25,46 +27,59 @@ export class AutoExtractionService {
         this.ingest = ingest;
     }
 
-    async extract(ctx: IContext, resource: IResourceToUpdate) {
-        logger.info(ctx, `start to process auto extraction, payload=${JSON.stringify(resource)}`);
+    async extract(ctx: IContext, event: IResourceToUpdate) {
+        logger.info(ctx, `start to process auto extraction, payload=${JSON.stringify(event)}`);
 
         const extractor = getExtractorBySystemType(
             ctx,
-            resource.systemType,
-            resource.systemUniqueIdentifier
+            event.systemType,
+            event.systemUniqueIdentifier
         );
         if (!extractor) {
             logger.warn(
                 ctx,
-                `no extractor found for systemType=${resource.systemType}, systemUniqueIdentifier=${resource.systemUniqueIdentifier}`
+                `no extractor found for systemType=${event.systemType}, systemUniqueIdentifier=${event.systemUniqueIdentifier}`
             );
             return;
         }
 
-        logger.debug(ctx, `extractor found, extracting resource: ${resource.nativeUniqueName}`);
+        logger.debug(ctx, `extractor found, processing resource: ${event.nativeUniqueName}`);
 
-        const target = await extractor.extract(ctx, resource.nativeUniqueName);
-        logger.debug(
-            ctx,
-            `extraction completed, resource=${target.metadata.resource.nativeUniqueName}, parents=${target.parents.length}, children=${target.children.length}`
-        );
+        const resources: IStageResource[] = [];
+        if (event.type === 'update') {
+            const target = await extractor.extract(ctx, event.nativeUniqueName);
+            logger.debug(
+                ctx,
+                `extraction completed, resource=${target.metadata.resource.nativeUniqueName}, parents=${target.parents.length}, children=${target.children.length}`
+            );
+            resources.push(convertExtractedResourceToStage(ctx.tenantId, target));
+        } else {
+            resources.push({
+                tenantId: ctx.tenantId,
+                nativeUniqueName: event.nativeUniqueName,
+                version: event.version,
+                metadata: null,
+                system: { type: event.systemType, uniqueIdentifier: event.systemUniqueIdentifier },
+                deletedBy: 'auto',
+            });
+        }
 
-        const stageIds = await this.ingest.stage(ctx, [
-            convertExtractedResourceToStage(ctx.tenantId, target),
-        ]);
+        const stageIds = await this.ingest.stage(ctx, resources);
 
         logger.info(
             ctx,
-            `auto extraction completed successfully, stageIds=${JSON.stringify(stageIds)}, resource=${resource.nativeUniqueName}`
+            `auto extraction completed successfully, stageIds=${JSON.stringify(stageIds)}, resource=${event.nativeUniqueName}`
         );
     }
 }
 
-function convertExtractedResourceToStage(
+export function convertExtractedResourceToStage(
     tenantId: string,
-    resource: IExtractedResource
+    resource: IExtractedResource,
+    workflowId?: string
 ): IStageResource {
     const stage = {
+        workflowId,
         tenantId,
         ...resource.metadata.resource,
         system: resource.metadata.system,
