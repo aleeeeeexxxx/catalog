@@ -126,7 +126,7 @@ export class SyncAllService {
 
         logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
 
-        await this.stageDeletedResources(ctx, deleted, desc.system);
+        await this.stageDeletedResources(ctx, deleted, desc.system, workflowId);
         await this.workflow.cacheOutdated(workflowId, outdated);
 
         await this.workflow.setWorkflowStatus(workflowId, SyncStatus.BROWSED);
@@ -168,10 +168,14 @@ export class SyncAllService {
         );
 
         logger.info(ctx, 'Extract completed');
+
+        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.INGESTING);
     }
 
     async handleMonitorIngest(workflowIds: string[]) {
-        for (let workflowId in workflowIds) {
+        for (let workflowId of workflowIds) {
+            logger.info(`resources are ingested for workflow, workflow id=${workflowId}`);
+
             const desc = await this.workflow.getWorkflowDescription(workflowId);
             if (!desc) {
                 logger.error({ workflowId }, 'Workflow description not found');
@@ -198,31 +202,30 @@ export class SyncAllService {
 
     private compareResourcesToRefresh(
         ctx: IContext,
-        resources: IBrowseResult[],
+        browsed: IBrowseResult[],
         current: IBrowseResult[]
     ): { deleted: IBrowseResult[]; outdated: string[] } {
         const deleted: IBrowseResult[] = [];
         const outdated: string[] = [];
 
-        const currentMap = new Map();
+        const currentMap = new Map<string, number>();
         current.forEach(res => {
             currentMap.set(res.nativeUniqueName, res.version);
         });
 
-        const browsedResources = new Map();
-        resources.forEach(res => {
-            browsedResources.set(res.nativeUniqueName, res.version);
+        const browsedResources = new Set<string>();
+        browsed.forEach(res => {
+            browsedResources.add(res.nativeUniqueName);
 
             const cur = currentMap.get(res.nativeUniqueName);
-            if (cur && cur.version >= res.version) {
+            if (cur && cur >= res.version) {
                 return;
             }
             outdated.push(res.nativeUniqueName);
         });
 
         current.forEach(res => {
-            const browsed = browsedResources.get(res.nativeUniqueName);
-            if (!browsed) {
+            if (!browsedResources.has(res.nativeUniqueName)) {
                 deleted.push(res);
             }
         });
@@ -230,7 +233,12 @@ export class SyncAllService {
         return { deleted, outdated };
     }
 
-    private async stageDeletedResources(ctx: IContext, deleted: IBrowseResult[], system: ISystem) {
+    private async stageDeletedResources(
+        ctx: IContext,
+        deleted: IBrowseResult[],
+        system: ISystem,
+        workflowId: string
+    ) {
         const stageDeleted: IStageResource[] = deleted.map(res => {
             return {
                 tenantId: ctx.tenantId,
@@ -239,6 +247,7 @@ export class SyncAllService {
                 deletedBy: 'auto',
                 system,
                 metadata: '',
+                workflowId: workflowId,
             };
         });
         await this.ingest.stage(ctx, stageDeleted);
@@ -330,7 +339,14 @@ class SyncAllWorkflow {
     }
 
     async setWorkflowStatus(workflowId: string, status: SyncStatus) {
-        await this.redis.set(this.key(SyncAllWorkflow.WORKFLOW_STATUS, workflowId), status);
+        const key = this.key(SyncAllWorkflow.WORKFLOW_STATUS, workflowId);
+
+        if (status === SyncStatus.INGESTING) {
+            await this.redis.compareAndSet(key, SyncStatus.EXTRACTING, status);
+            return;
+        }
+
+        await this.redis.set(key, status);
     }
 
     async getWorkflowStatus(workflowId: string) {

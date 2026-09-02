@@ -1,6 +1,7 @@
 import { createNewContext } from '../../src/context';
 import { IExtractor } from '../../src/extractor';
 import {
+    DbClient,
     RedisClient,
     RelationshipDatastore,
     ResourceDatastore,
@@ -11,38 +12,28 @@ import { AsyncJobService } from '../../src/service/asyncJob';
 import { IngestService } from '../../src/service/ingest';
 import { SyncAllService, SyncStatus } from '../../src/service/syncall';
 import { sleep } from '../../src/utils/time';
-import { getRedisClient } from '../setup';
+import { getRedisClient, getTestDbClient } from '../setup';
 import { getExtractorBySystemType } from '../../src/extractor';
-import { createAutoMock } from '../mockHelper';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
     getExtractorBySystemType: jest.fn(),
 }));
+// Mock dependencies
+let mockExtractor: jest.Mocked<IExtractor>;
 
 let redis: RedisClient;
 let taskq: AsyncJobService;
 let service: SyncAllService;
 let ingest: IngestService;
-
-// Mock dependencies
-let mockResourceStore: jest.Mocked<ResourceDatastore>;
-let mockSystemStore: jest.Mocked<SystemDatastore>;
-let mockStageStore: jest.Mocked<StageDatastore>;
-let mockRelationshipStore: jest.Mocked<RelationshipDatastore>;
-let mockExtractor: jest.Mocked<IExtractor>;
+let db: DbClient;
+let resourceStore: ResourceDatastore;
+let systemStore: SystemDatastore;
+let stageStore: StageDatastore;
+let relationshipStore: RelationshipDatastore;
 
 describe('Sync all workflow', () => {
     beforeAll(async () => {
-        redis = await getRedisClient();
-        taskq = new AsyncJobService(redis);
-
-        // Create mocks for other dependencies
-        mockResourceStore = createAutoMock(ResourceDatastore);
-        mockSystemStore = createAutoMock(SystemDatastore);
-        mockStageStore = createAutoMock(StageDatastore);
-        mockRelationshipStore = createAutoMock(RelationshipDatastore);
-
         // Create mock extractor
         mockExtractor = {
             browse: jest.fn(),
@@ -53,38 +44,87 @@ describe('Sync all workflow', () => {
         // Setup getExtractorBySystemType to return mock extractor
         (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
 
-        // Initialize IngestService with mocks
+        redis = await getRedisClient();
+        taskq = new AsyncJobService(redis);
+
+        db = await getTestDbClient();
+        resourceStore = new ResourceDatastore(db);
+        systemStore = new SystemDatastore(db);
+        stageStore = new StageDatastore(db);
+        relationshipStore = new RelationshipDatastore(db);
+
+        // Initialize IngestService with real datastores
         ingest = new IngestService(
-            mockStageStore,
-            mockResourceStore,
-            mockSystemStore,
-            mockRelationshipStore,
+            stageStore,
+            resourceStore,
+            systemStore,
+            relationshipStore,
             taskq,
             redis,
             1,
             1
         );
 
-        // Initialize service with real taskq and mocked dependencies
-        service = new SyncAllService(mockResourceStore, mockSystemStore, taskq, redis, ingest);
+        // Initialize service with real datastores
+        service = new SyncAllService(resourceStore, systemStore, taskq, redis, ingest);
     });
 
     it('sync all should complete', async () => {
-        const mockSystemId = 'mock-system-id';
-        const ctx = createNewContext('sync all should complete');
+        const mockSystemId = 'mock-system-id-for-sync-all';
+        const mockTenantId = 'sync all should complete';
+        const mockSystemType = 'SAC';
+        const ctx = createNewContext(mockTenantId);
 
-        mockSystemStore.get.mockResolvedValueOnce({ type: 'SAC', uniqueIdentifier: '123' });
+        await db.prisma.system.create({
+            data: {
+                id: mockSystemId,
+                tenantId: mockTenantId,
+                type: mockSystemType,
+                uniqueIdentifier: 'starkiller-hc-deepsea',
+            },
+        });
+        await db.prisma.resource.createMany({
+            data: [
+                {
+                    nativeUniqueName: 'resource2',
+                    version: 3,
+                    tenantId: mockTenantId,
+                    id: 'resource2',
+                    systemId: mockSystemId,
+                    metadata: '{}',
+                },
+                {
+                    nativeUniqueName: 'resource3',
+                    version: 3,
+                    tenantId: mockTenantId,
+                    id: 'resource3',
+                    systemId: mockSystemId,
+                    metadata: '{}',
+                },
+                {
+                    nativeUniqueName: 'resource4',
+                    version: 3,
+                    tenantId: mockTenantId,
+                    id: 'resource4',
+                    systemId: mockSystemId,
+                    metadata: '{}',
+                },
+                {
+                    nativeUniqueName: 'resource5',
+                    version: 5,
+                    tenantId: mockTenantId,
+                    id: 'resource5',
+                    systemId: mockSystemId,
+                    metadata: '{}',
+                },
+            ],
+        });
+
         mockExtractor.browse.mockResolvedValueOnce([
             { nativeUniqueName: 'resource1', version: 1 },
             { nativeUniqueName: 'resource2', version: 2 },
             { nativeUniqueName: 'resource3', version: 3 },
             { nativeUniqueName: 'resource4', version: 4 },
-        ]);
-        mockResourceStore.getResourceVersions.mockResolvedValueOnce([
-            { nativeUniqueName: 'resource2', version: 3 },
-            { nativeUniqueName: 'resource3', version: 2 },
-            { nativeUniqueName: 'resource4', version: 4 },
-            { nativeUniqueName: 'resource5', version: 4 },
         ]);
         mockExtractor.extractBatch.mockResolvedValueOnce([
             {
@@ -114,7 +154,7 @@ describe('Sync all workflow', () => {
         // Check extractBatch was called with correct parameters
         expect(mockExtractor.extractBatch).toHaveBeenCalledWith(expect.anything(), [
             'resource1',
-            'resource3',
+            'resource4',
         ]);
     });
 });

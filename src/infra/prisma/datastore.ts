@@ -248,7 +248,6 @@ export class StageDatastore {
                 SELECT "stageId", "id"
                 FROM "stage"."StageResource"
                 WHERE "startIngestAt" IS NULL
-                    AND "tenantId" = ${ctx.tenantId}
                 FOR UPDATE SKIP LOCKED
             ),
             ranked AS (
@@ -270,7 +269,29 @@ export class StageDatastore {
         return stages;
     }
 
-    async delete(ctx: IContext, stageIds: string[]) {}
+    async delete(ctx: IContext, stageIds: string[]) {
+        await this.client.prisma.stageResource.deleteMany({
+            where: {
+                stageId: {
+                    in: stageIds,
+                },
+            },
+        });
+        await this.client.prisma.stagedSystem.deleteMany({
+            where: {
+                stageId: {
+                    in: stageIds,
+                },
+            },
+        });
+        await this.client.prisma.stagedRelationship.deleteMany({
+            where: {
+                stageId: {
+                    in: stageIds,
+                },
+            },
+        });
+    }
 
     async countStagesByWorkflowId(ctx: IContext, workflowId: string): Promise<number> {
         return this.client.prisma.stageResource.count({
