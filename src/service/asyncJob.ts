@@ -30,11 +30,11 @@ export class AsyncJobService {
 
     private jobs: Map<AsyncTaskUniqueId, IAsyncTaskDescription>;
 
-    constructor(redis: RedisClient) {
+    constructor(redis: RedisClient, concurrency: number = 10) {
         this.queue = new Queue(CATALOG_TASK_QUEUE, { connection: redis });
         this.worker = new Worker(CATALOG_TASK_QUEUE, this.handleJob.bind(this), {
             connection: redis,
-            concurrency: 10,
+            concurrency: concurrency,
         });
 
         this.jobs = new Map();
@@ -45,13 +45,14 @@ export class AsyncJobService {
     }
 
     async push(ctx: IContext, id: AsyncTaskUniqueId, param: any, opts?: JobsOptions) {
-        logger.info(ctx, `enqueue task, task unique id=${id}`);
+        logger.debug(ctx, `enqueue task, task unique id=${id}`);
 
         const job = {
             id,
             param,
         } as IBulkTask;
-        await this.queue.add(CATALOG_TASK_QUEUE, job, opts);
+        const created = await this.queue.add(CATALOG_TASK_QUEUE, job, opts);
+        return created.id;
     }
 
     private async handleJob(job: Job) {
@@ -66,7 +67,7 @@ export class AsyncJobService {
         try {
             await taskDesc.handler(task.param);
         } catch (err) {
-            logger.error('failed to run job');
+            logger.error({ err }, 'failed to run job');
         }
     }
 }

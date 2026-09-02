@@ -19,6 +19,8 @@ const STAGE_NOTIFIER_NAME = 'stage_notifier';
 const MAX_WAITING_STAGE = 50;
 const DELAY = 60; // 1 min
 
+export type IngestCallback = (ingestedWorkflowIds: string[]) => Promise<void>;
+
 export class IngestService {
     private stageStore: StageDatastore;
     private resourceStore: ResourceDatastore;
@@ -28,13 +30,17 @@ export class IngestService {
     private taskq: AsyncJobService;
     private notifier: CountAndTimerBasedNotifier;
 
+    private ingestCallback: IngestCallback | undefined;
+
     constructor(
         stageStore: StageDatastore,
         resourceStore: ResourceDatastore,
         systemStore: SystemDatastore,
         relationshipStore: RelationshipDatastore,
         taskq: AsyncJobService,
-        redis: RedisClient
+        redis: RedisClient,
+        maxWaitingStage: number = MAX_WAITING_STAGE,
+        stageNotifyDelay: number = DELAY
     ) {
         this.stageStore = stageStore;
         this.resourceStore = resourceStore;
@@ -49,13 +55,22 @@ export class IngestService {
 
         this.notifier = new CountAndTimerBasedNotifier(
             redis,
-            MAX_WAITING_STAGE,
-            DELAY,
+            maxWaitingStage,
+            stageNotifyDelay,
             this.enqueueIngestTask.bind(this)
         );
     }
 
+    setIngestCallback(callback: IngestCallback) {
+        if (this.ingestCallback) {
+            throw new Error('Ingest callback has already been set');
+        }
+        this.ingestCallback = callback;
+    }
+
     async stage(ctx: IContext, objects: IStageResource[]): Promise<string[]> {
+        logger.info(ctx, `staging resources, length=${objects.length}`);
+
         const stageIds: string[] = [];
 
         const resources: Prisma.StageResourceCreateManyInput[] = [];
@@ -170,19 +185,38 @@ export class IngestService {
         return stageIds;
     }
 
-    async ingest(ctx: IContext, maxStage: number): Promise<string[]> {
-        const stageIds = await this.stageStore.getPendingStages(ctx, maxStage);
+    async ingest(ctx: IContext, maxStage: number) {
+        logger.info(ctx, `Ingesting resources, maxStage=${maxStage}`);
+        const stages = await this.stageStore.getPendingStages(ctx, maxStage);
 
+        const stageIds = stages.map(stage => stage.stageId);
+        logger.debug(ctx, `Pending stage resources, stagedIds=${JSON.stringify(stageIds)}`);
         if (stageIds.length === 0) {
+            logger.info(ctx, `No staged resources got, skip ingesting`);
             return [];
         }
+
+        logger.info(
+            ctx,
+            `Staged resources to ingest, length=${stageIds.length}, stagedIds=${JSON.stringify(stageIds)}`
+        );
 
         await this.systemStore.batchUpsertFromStage(ctx, stageIds);
         await this.resourceStore.batchUpsertStage(ctx, stageIds);
         await this.relationshipStore.batchUpsertStage(ctx, stageIds);
 
         await this.stageStore.delete(ctx, stageIds);
-        return stageIds;
+
+        if (this.ingestCallback) {
+            const workflowIds = new Set<string>();
+            stages.forEach(stage => {
+                if (stage.workflowId) {
+                    workflowIds.add(stage.workflowId);
+                }
+            });
+
+            void this.ingestCallback(Array.from(workflowIds));
+        }
     }
 
     async countUningested(ctx: IContext, workflowId: string): Promise<number> {
@@ -191,6 +225,8 @@ export class IngestService {
 
     private async enqueueIngestTask() {
         const ctx = createNewContext(IngestService.name);
+        logger.debug(ctx, `enqueue ingest task`);
+
         await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, null);
     }
 
