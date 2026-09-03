@@ -11,4 +11,5 @@ module.exports = {
     transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
     testTimeout: 10000,
     globalSetup: '<rootDir>/jest/globalSetup.ts',
+    globalTeardown: '<rootDir>/jest/globalTeardown.ts',
 };

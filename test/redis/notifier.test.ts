@@ -12,6 +12,10 @@ describe('notifier', () => {
         notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback, 'test_topic');
     });
 
+    afterAll(async () => {
+        await notifier.close();
+    });
+
     it('trigger by add, one by one', async () => {
         const testKey = 'trigger by add, one by one';
 
