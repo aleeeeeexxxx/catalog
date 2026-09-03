@@ -1,8 +1,11 @@
 -- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "catalog";
+
+-- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "stage";
 
 -- CreateTable
-CREATE TABLE "System" (
+CREATE TABLE "catalog"."System" (
     "id" VARCHAR(32) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
@@ -14,7 +17,7 @@ CREATE TABLE "System" (
 );
 
 -- CreateTable
-CREATE TABLE "Resource" (
+CREATE TABLE "catalog"."Resource" (
     "id" VARCHAR(32) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
@@ -28,7 +31,7 @@ CREATE TABLE "Resource" (
 );
 
 -- CreateTable
-CREATE TABLE "ResourceRelationship" (
+CREATE TABLE "catalog"."ResourceRelationship" (
     "sourceId" VARCHAR(32) NOT NULL,
     "targetId" VARCHAR(32) NOT NULL,
     "type" VARCHAR(256) NOT NULL,
@@ -77,7 +80,7 @@ CREATE TABLE "stage"."StagedSystem" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "System"("tenantId", "uniqueIdentifier");
+CREATE UNIQUE INDEX "System_tenantId_uniqueIdentifier_key" ON "catalog"."System"("tenantId", "uniqueIdentifier");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "Resource"("tenantId", "systemId", "nativeUniqueName");
+CREATE UNIQUE INDEX "Resource_tenantId_systemId_nativeUniqueName_key" ON "catalog"."Resource"("tenantId", "systemId", "nativeUniqueName");
