@@ -222,7 +222,7 @@ describe('StageDatastore', () => {
         // Get only 1 stageId
         const pendingStages = await stage.getPendingStages(ctx, 1);
         expect(pendingStages).toHaveLength(1);
-        expect([stageId3, stageId4]).toContainEqual(pendingStages[0]);
+        expect([stageId3, stageId4]).toContainEqual(pendingStages[0].stageId);
 
         // Verify startIngestAt was updated for the returned stageId
         const updated = await dbClient.prisma.stageResource.findMany({
