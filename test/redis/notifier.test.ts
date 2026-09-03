@@ -9,7 +9,7 @@ const mockCallback = jest.fn();
 describe('notifier', () => {
     beforeAll(async () => {
         redis = await getRedisClient();
-        notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback);
+        notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback, 'test_topic');
     });
 
     it('trigger by add, one by one', async () => {

@@ -21,12 +21,10 @@ model System {
   createdAt DateTime  @default(now())
   deletedAt DateTime?
 
-  tenantId         String @db.VarChar(32) // RLS
+  tenantId         String @db.VarChar(32)
   type             String @db.VarChar(256)
   uniqueIdentifier String @db.VarChar(256)
 
-  // Prisma does not support partial unique index
-  // manually [add] WHERE "deletedAt" IS NULL
   @@unique([tenantId, uniqueIdentifier])
   @@schema("catalog")
 }
@@ -35,9 +33,7 @@ model Resource {
   id String @id @db.VarChar(32)
 
   createdAt DateTime  @default(now())
-  createdBy String?   @db.VarChar(256)
   deletedAt DateTime?
-  deletedBy String?   @db.VarChar(256)
 
   systemId         String
   tenantId         String @db.VarChar(32)
@@ -46,8 +42,6 @@ model Resource {
 
   metadata String
 
-  // Prisma does not support partial unique index
-  // manually [add] WHERE "deletedAt" IS NULL
   @@unique([tenantId, systemId, nativeUniqueName])
   @@schema("catalog")
 }
@@ -68,9 +62,10 @@ model StageResource {
 
   stageAt       DateTime  @default(now())
   startIngestAt DateTime?
-  deletedBy     String?
 
   tenantId String @db.VarChar(32)
+
+  deletedAt DateTime? // for delete event
 
   nativeUniqueName String @db.VarChar(256)
   version          Int    @default(0)

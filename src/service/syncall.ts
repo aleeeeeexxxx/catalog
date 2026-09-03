@@ -2,7 +2,6 @@ import { createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
 import {
     IStageResource,
-    IStageSystem,
     ISystem,
     RedisClient,
     ResourceDatastore,
@@ -259,10 +258,11 @@ export class SyncAllService {
                 tenantId: ctx.tenantId,
                 nativeUniqueName: res.nativeUniqueName,
                 version: res.version,
-                deletedBy: 'sync all',
-                system,
+                deletedAt: new Date(),
                 metadata: '',
                 workflowId: workflowId,
+
+                system,
             };
         });
         await this.ingest.stage(ctx, stageDeleted);

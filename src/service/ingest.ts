@@ -15,6 +15,7 @@ import { CountAndTimerBasedNotifier, RedisClient } from '../infra';
 
 const logger = getLogger(__filename);
 
+const STAGE_NOTIFIER_TOPIC = 'stage_notifier_topic';
 const STAGE_NOTIFIER_NAME = 'stage_notifier';
 const MAX_WAITING_STAGE = 50;
 const DELAY = 60; // 1 min
@@ -57,7 +58,8 @@ export class IngestService {
             redis,
             maxWaitingStage,
             stageNotifyDelay,
-            this.enqueueIngestTask.bind(this)
+            this.enqueueIngestTask.bind(this),
+            STAGE_NOTIFIER_TOPIC
         );
     }
 
@@ -102,7 +104,7 @@ export class IngestService {
                 metadata: JSON.stringify(obj.metadata),
                 systemType: obj.system.type,
                 systemTypeUniqueId: obj.system.uniqueIdentifier,
-                deletedBy: obj.deletedBy,
+                deletedAt: obj.deletedAt,
                 workflowId: obj.workflowId,
             });
 

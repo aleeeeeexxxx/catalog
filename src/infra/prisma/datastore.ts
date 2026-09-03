@@ -60,7 +60,7 @@ export class ResourceDatastore {
                     sr."nativeUniqueName",
                     sr."version",
                     sr."metadata",
-                    sr."deletedBy"
+                    sr."deletedAt"
                 FROM "stage"."StageResource" sr
                 INNER JOIN "catalog"."System" s
                     ON s."tenantId" = sr."tenantId"
@@ -86,15 +86,17 @@ export class ResourceDatastore {
                 "nativeUniqueName",
                 "version",
                 "metadata",
-                "deletedBy"
+                "deletedAt"
             )
             SELECT * FROM staged
-            ON CONFLICT ("tenantId", "systemId", "nativeUniqueName") WHERE "deletedAt" IS NULL
+            ON CONFLICT ("tenantId", "systemId", "nativeUniqueName")
             DO UPDATE SET
                 "version"   = EXCLUDED."version",
-                "metadata"  = EXCLUDED."metadata",
-                "deletedAt" = CASE WHEN EXCLUDED."deletedBy" IS NULL THEN NULL ELSE NOW() END,
-                "deletedBy" = EXCLUDED."deletedBy";
+                "metadata"  = CASE WHEN EXCLUDED."deletedAt" IS NULL 
+                                THEN EXCLUDED."metadata" 
+                                ELSE "catalog"."Resource"."metadata" 
+                              END,
+                "deletedAt" = EXCLUDED."deletedAt";
         `;
     }
 
@@ -128,12 +130,21 @@ export class SystemDatastore {
         return await this.client.transaction(
             ctx,
             async (tx: PrismaTx) => {
-                const created = await tx.system.create({
-                    data: {
+                const created = await tx.system.upsert({
+                    where: {
+                        tenantId_uniqueIdentifier: {
+                            tenantId: ctx.tenantId,
+                            uniqueIdentifier: system.uniqueIdentifier,
+                        },
+                    },
+                    create: {
                         id: Generate32UUID(),
                         tenantId: ctx.tenantId,
                         uniqueIdentifier: system.uniqueIdentifier,
                         type: system.type,
+                    },
+                    update: {
+                        deletedAt: null,
                     },
                 });
                 return created.id;

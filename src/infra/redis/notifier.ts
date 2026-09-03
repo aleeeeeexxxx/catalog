@@ -19,13 +19,19 @@ export class CountAndTimerBasedNotifier {
     private queue: Queue;
     private worker: Worker;
 
-    constructor(redis: RedisClient, max: number, delay: number, callback: NotifierCallback) {
+    constructor(
+        redis: RedisClient,
+        max: number,
+        delay: number,
+        callback: NotifierCallback,
+        topic: string
+    ) {
         this.redis = redis;
         this.max = max;
         this.delay = delay;
         this.callback = callback;
-        this.queue = new Queue('ctb_notifier_timer', { connection: this.redis });
-        this.worker = new Worker('ctb_notifier_timer', this.handleDelayJob.bind(this), {
+        this.queue = new Queue(topic, { connection: this.redis });
+        this.worker = new Worker(topic, this.handleDelayJob.bind(this), {
             connection: this.redis,
         });
     }

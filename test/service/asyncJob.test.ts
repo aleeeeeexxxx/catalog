@@ -13,7 +13,7 @@ describe('AsyncJobService', () => {
 
     it('push job', async () => {
         const ctx = createNewContext('AsyncJobService');
-        const taskq = new AsyncJobService(redis);
+        const taskq = new AsyncJobService(redis, 2, 'test-asyncjob');
         const taskUniqueId = 'test' as AsyncTaskUniqueId;
 
         const wg = new WaitGroup();

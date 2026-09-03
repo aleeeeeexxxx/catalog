@@ -30,9 +30,9 @@ export class AsyncJobService {
 
     private jobs: Map<AsyncTaskUniqueId, IAsyncTaskDescription>;
 
-    constructor(redis: RedisClient, concurrency: number = 10) {
-        this.queue = new Queue(CATALOG_TASK_QUEUE, { connection: redis });
-        this.worker = new Worker(CATALOG_TASK_QUEUE, this.handleJob.bind(this), {
+    constructor(redis: RedisClient, concurrency: number = 10, topic = CATALOG_TASK_QUEUE) {
+        this.queue = new Queue(topic, { connection: redis });
+        this.worker = new Worker(topic, this.handleJob.bind(this), {
             connection: redis,
             concurrency: concurrency,
         });
@@ -67,7 +67,7 @@ export class AsyncJobService {
         try {
             await taskDesc.handler(task.param);
         } catch (err) {
-            logger.error({ err }, 'failed to run job');
+            logger.error({ err }, `failed to run job, job=${JSON.stringify(task)}`);
         }
     }
 }

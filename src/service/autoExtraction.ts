@@ -60,7 +60,7 @@ export class AutoExtractionService {
                 version: event.version,
                 metadata: null,
                 system: { type: event.systemType, uniqueIdentifier: event.systemUniqueIdentifier },
-                deletedBy: 'auto',
+                deletedAt: new Date(),
             });
         }
 
