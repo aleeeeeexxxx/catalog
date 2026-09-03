@@ -1,5 +1,5 @@
 import { DbClient } from '../src/infra/prisma/client';
-import { IDbConfig } from '../src/infra/prisma/config';
+import { getDatabaseUrl, IDbConfig } from '../src/infra/prisma/config';
 import { IRedisConfig } from '../src/infra/redis/client';
 import { Once } from '../src/utils/once';
 import { getLogger } from '../src/logger';
@@ -38,7 +38,7 @@ async function createTestDbClient(): Promise<DbClient> {
     logger.info('Creating test tenant DB client');
 
     const cfg = loadDevDbConfig();
-    logger.info(`Loaded DB config: ${cfg.host}:${cfg.port}/${cfg.database || 'catalog'}`);
+    logger.info(`Loaded DB config: ${getDatabaseUrl(cfg)}`);
 
     const db = new DbClient(cfg);
 
