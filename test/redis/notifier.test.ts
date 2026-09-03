@@ -1,4 +1,5 @@
 import { CountAndTimerBasedNotifier, RedisClient } from '../../src/infra';
+import { Generate32UUID } from '../../src/utils/uuid';
 import { WaitGroup } from '../../src/utils/waitgroup';
 import { getRedisClient } from '../setup';
 
@@ -9,11 +10,11 @@ const mockCallback = jest.fn();
 describe('notifier', () => {
     beforeAll(async () => {
         redis = await getRedisClient();
-        notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback, 'test_topic');
+        notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback, Generate32UUID());
     });
 
-    afterAll(async () => {
-        await notifier.close();
+    afterEach(() => {
+        mockCallback.mockClear();
     });
 
     it('trigger by add, one by one', async () => {
@@ -22,7 +23,7 @@ describe('notifier', () => {
         const waiter = new WaitGroup(500);
         waiter.add();
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter.done();
         });
 
@@ -39,7 +40,7 @@ describe('notifier', () => {
         const waiter = new WaitGroup(500);
         waiter.add();
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter.done();
         });
 
@@ -51,15 +52,14 @@ describe('notifier', () => {
     it('trigger by delay', async () => {
         const testKey = 'trigger by delay';
 
-        const waiter = new WaitGroup(1500);
+        const waiter = new WaitGroup(2000);
         waiter.add();
 
         const start = Date.now();
         let end: number | undefined;
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter.done();
-
             end = Date.now();
         });
 
@@ -79,9 +79,8 @@ describe('notifier', () => {
         const start = Date.now();
         let end: number | undefined;
 
-        mockCallback.mockImplementation(() => {
+        mockCallback.mockImplementation(async () => {
             waiter.done();
-
             end = Date.now();
         });
 
@@ -98,7 +97,7 @@ describe('notifier', () => {
         const waiter = new WaitGroup(1500);
         waiter.add();
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter.done();
         });
 
@@ -109,7 +108,7 @@ describe('notifier', () => {
         const waiter2 = new WaitGroup(1500);
         waiter2.add();
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter2.done();
         });
 
@@ -120,7 +119,7 @@ describe('notifier', () => {
         const waiter3 = new WaitGroup(500);
         waiter3.add();
 
-        mockCallback.mockImplementationOnce(() => {
+        mockCallback.mockImplementationOnce(async () => {
             waiter3.done();
         });
 

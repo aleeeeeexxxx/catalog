@@ -18,6 +18,7 @@ export class CountAndTimerBasedNotifier {
     private callback: NotifierCallback;
     private queue: Queue;
     private worker: Worker;
+    private topic: string;
 
     constructor(
         redis: RedisClient,
@@ -30,10 +31,11 @@ export class CountAndTimerBasedNotifier {
         this.max = max;
         this.delay = delay;
         this.callback = callback;
-        this.queue = new Queue(topic, { connection: this.redis });
+        this.queue = new Queue(topic, { connection: redis });
         this.worker = new Worker(topic, this.handleDelayJob.bind(this), {
-            connection: this.redis,
+            connection: redis,
         });
+        this.topic = topic;
     }
 
     async close() {
@@ -67,7 +69,7 @@ end
 redis.call('SET', key, cur)
 
 local uuid = ''
-if (kick > 0 and cur > 0) or (kick == 0 and cur == 1) then
+if (kick > 0 and cur > 0) or (kick == 0 and cur - n == 0) then
     uuid = redis.call('TIME')[1] .. '-' .. math.random(100000, 999999)
     redis.call('SET', wait_key, uuid)
 end
@@ -76,6 +78,7 @@ return {kick, uuid}
 `;
         n = n ?? 1;
         logger.debug({ key, n, max: this.max }, 'Adding to counter');
+
         const [kick, uniqueId] = (await this.redis.eval(
             LUA_SCRIPT,
             2,
@@ -85,7 +88,10 @@ return {kick, uuid}
             this.max
         )) as [number, string];
 
-        logger.debug({ key, kick, uniqueId }, 'Counter add result');
+        logger.debug(
+            { key, kick, uniqueId },
+            `Get count result, key=${key}, kick=${kick}, uuid=${uniqueId}`
+        );
 
         for (let i = 0; i < kick; i++) {
             void this.runCallback();
@@ -99,7 +105,7 @@ return {kick, uuid}
     private async createDelayJob(counter: ICounterStatus) {
         try {
             const delay = this.delay * 1000;
-            logger.debug({ counter, delay }, 'Creating delay job');
+            logger.debug({ counter, delay }, `Creating delay job, delay=${this.delay}s`);
             await this.queue.add('timeout', counter, { delay });
         } catch (err) {
             logger.error({ err, counter }, 'Failed to create delay job');
@@ -153,10 +159,10 @@ end
     }
 
     private getWaiterKey(key: string): string {
-        return `ctb_notifier_waiter@${key}`;
+        return `ctr_${this.topic}@${key}`;
     }
 
     private getCounterKey(key: string): string {
-        return `ctb_notifier_counter@${key}`;
+        return `ctr_${this.topic}@${key}`;
     }
 }
