@@ -1,0 +1,86 @@
+name: Pull Request
+
+on:
+    pull_request:
+        branches: [main, develop]
+        types: [opened, synchronize, reopened]
+
+jobs:
+    lint-and-format:
+        name: Lint and Format Check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Check formatting
+              run: npm run format:check
+
+    build-and-test:
+        name: Build and Test
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: catalog_test
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 5432:5432
+
+            redis:
+                image: redis:7-alpine
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 6379:6379
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run Prisma migrations
+              run: npx prisma migrate deploy
+              env:
+                  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catalog_test
+
+            - name: Generate Prisma Client
+              run: npx prisma generate
+              env:
+                  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catalog_test
+
+            - name: Build
+              run: npm run build
+
+            - name: Run tests
+              run: npm run test:coverage
+              env:
+                  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catalog_test
+                  REDIS_HOST: localhost
+                  REDIS_PORT: 6379
+                  LOG_LEVEL: debug
