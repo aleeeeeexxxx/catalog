@@ -1,10 +1,10 @@
-import { DbClient } from '../src/infra/prisma/client';
-import { getDatabaseUrl, IDbConfig } from '../src/infra/prisma/config';
-import { IRedisConfig } from '../src/infra/redis/client';
+import { DbClient } from '../src/dao/prisma/client';
+import { getDatabaseUrl, IDbConfig } from '../src/dao/prisma/config';
+import { IRedisConfig } from '../src/dao/redis/client';
 import { Once } from '../src/utils/once';
 import { getLogger } from '../src/logger';
 import { createNewContext } from '../src/context';
-import { RedisClient } from '../src/infra';
+import { RedisClient } from '../src/dao';
 import { Prisma } from '../generated/prisma/client';
 
 const logger = getLogger(__filename);

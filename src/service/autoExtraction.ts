@@ -4,7 +4,7 @@
 
 import { IContext } from '../context';
 import { getExtractorBySystemType, IExtractedResource } from '../extractor';
-import { IStageResource, VERSION_REFERENCED_ONLY } from '../infra';
+import { IStageResource, VERSION_REFERENCED_ONLY } from '../dao';
 import { getLogger } from '../logger';
 import { IngestService } from './ingest';
 

@@ -1,5 +1,5 @@
 import { Queue, Worker, Job, JobsOptions } from 'bullmq';
-import { RedisClient } from '../infra/redis/client';
+import { RedisClient } from '../dao/redis/client';
 import { IContext } from '../context';
 import { getLogger } from '../logger';
 

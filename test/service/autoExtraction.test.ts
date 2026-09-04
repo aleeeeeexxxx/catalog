@@ -7,7 +7,7 @@ import {
     ResourceDatastore,
     StageDatastore,
     SystemDatastore,
-} from '../../src/infra';
+} from '../../src/dao';
 import { AsyncJobService } from '../../src/service/asyncJob';
 import { AutoExtractionService } from '../../src/service/autoExtraction';
 import { IngestService } from '../../src/service/ingest';

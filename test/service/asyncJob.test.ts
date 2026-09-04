@@ -1,5 +1,5 @@
 import { createNewContext } from '../../src/context';
-import { RedisClient } from '../../src/infra';
+import { RedisClient } from '../../src/dao';
 import { AsyncJobService, AsyncTaskUniqueId } from '../../src/service/asyncJob';
 import { Generate32UUID } from '../../src/utils/uuid';
 import { WaitGroup } from '../../src/utils/waitgroup';

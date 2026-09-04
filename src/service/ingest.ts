@@ -6,12 +6,12 @@ import {
     ResourceDatastore,
     StageDatastore,
     SystemDatastore,
-} from '../infra/prisma';
+} from '../dao/prisma';
 import { getLogger } from '../logger';
 import { Prisma } from '../../generated/prisma/client';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
-import { CountAndTimerBasedNotifier, RedisClient } from '../infra';
+import { CountAndTimerBasedNotifier, RedisClient } from '../dao';
 
 const logger = getLogger(__filename);
 

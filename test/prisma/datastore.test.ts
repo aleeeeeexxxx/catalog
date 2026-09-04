@@ -3,12 +3,7 @@
  */
 
 import { createNewContext } from '../../src/context';
-import {
-    ResourceDatastore,
-    SystemDatastore,
-    DbClient,
-    StageDatastore,
-} from '../../src/infra/prisma';
+import { ResourceDatastore, SystemDatastore, DbClient, StageDatastore } from '../../src/dao/prisma';
 import { getTestDbClient } from '../setup';
 
 let dbClient: DbClient;
