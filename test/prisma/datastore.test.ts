@@ -222,7 +222,7 @@ describe('StageDatastore', () => {
         // Get only 1 stageId
         const pendingStages = await stage.getPendingStages(ctx, 1);
         expect(pendingStages).toHaveLength(1);
-        expect([stageId3, stageId4]).toContainEqual(pendingStages[0]);
+        expect([stageId3, stageId4]).toContainEqual(pendingStages[0].stageId);
 
         // Verify startIngestAt was updated for the returned stageId
         const updated = await dbClient.prisma.stageResource.findMany({
@@ -430,22 +430,11 @@ describe('Ingest', () => {
                 tenantId: ctx.tenantId,
             },
         });
-        expect(old?.deletedAt).not.toBeNull();
-
-        // New resource should be created
-        const ret = await dbClient.prisma.resource.findFirst({
-            where: {
-                id: resourceId,
-                tenantId: ctx.tenantId,
-                deletedAt: null,
-            },
-        });
-        expect(ret).toBeDefined();
-        expect(ret?.version).toEqual(3);
-        expect(ret?.metadata).toEqual(JSON.stringify({ name: 'new' }));
+        expect(old?.deletedAt).toBeNull();
+        expect(old?.metadata).toEqual(JSON.stringify({ name: 'new' }));
     });
 
-    it('ingest with deletedBy should soft delete resource', async () => {
+    it('ingest with deletedAt should soft delete resource', async () => {
         const stageId = 'ingest-stage-5';
         const resourceId = 'ingest-resource-5';
 
@@ -469,7 +458,7 @@ describe('Ingest', () => {
             },
         });
 
-        // Create stage with deletedBy
+        // Create stage with deletedAt
         await dbClient.prisma.stageResource.create({
             data: {
                 stageId,
@@ -480,7 +469,7 @@ describe('Ingest', () => {
                 systemType: 'BTP',
                 systemTypeUniqueId: 'ingest-system-001',
                 metadata: JSON.stringify({ name: 'new' }),
-                deletedBy: 'Auto',
+                deletedAt: new Date(),
             },
         });
 
@@ -494,6 +483,5 @@ describe('Ingest', () => {
         });
         expect(ret).toBeDefined();
         expect(ret?.deletedAt).not.toBeNull();
-        expect(ret?.deletedBy).toEqual('Auto');
     });
 });

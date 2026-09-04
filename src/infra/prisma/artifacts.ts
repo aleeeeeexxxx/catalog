@@ -35,7 +35,7 @@ export interface IStageResource {
     version: number;
     system: IStageSystem;
 
-    deletedBy?: string;
+    deletedAt?: Date;
     metadata: any;
 
     parents?: IStageResource[];

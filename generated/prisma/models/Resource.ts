@@ -37,9 +37,7 @@ export type ResourceSumAggregateOutputType = {
 export type ResourceMinAggregateOutputType = {
   id: string | null
   createdAt: Date | null
-  createdBy: string | null
   deletedAt: Date | null
-  deletedBy: string | null
   systemId: string | null
   tenantId: string | null
   nativeUniqueName: string | null
@@ -50,9 +48,7 @@ export type ResourceMinAggregateOutputType = {
 export type ResourceMaxAggregateOutputType = {
   id: string | null
   createdAt: Date | null
-  createdBy: string | null
   deletedAt: Date | null
-  deletedBy: string | null
   systemId: string | null
   tenantId: string | null
   nativeUniqueName: string | null
@@ -63,9 +59,7 @@ export type ResourceMaxAggregateOutputType = {
 export type ResourceCountAggregateOutputType = {
   id: number
   createdAt: number
-  createdBy: number
   deletedAt: number
-  deletedBy: number
   systemId: number
   tenantId: number
   nativeUniqueName: number
@@ -86,9 +80,7 @@ export type ResourceSumAggregateInputType = {
 export type ResourceMinAggregateInputType = {
   id?: true
   createdAt?: true
-  createdBy?: true
   deletedAt?: true
-  deletedBy?: true
   systemId?: true
   tenantId?: true
   nativeUniqueName?: true
@@ -99,9 +91,7 @@ export type ResourceMinAggregateInputType = {
 export type ResourceMaxAggregateInputType = {
   id?: true
   createdAt?: true
-  createdBy?: true
   deletedAt?: true
-  deletedBy?: true
   systemId?: true
   tenantId?: true
   nativeUniqueName?: true
@@ -112,9 +102,7 @@ export type ResourceMaxAggregateInputType = {
 export type ResourceCountAggregateInputType = {
   id?: true
   createdAt?: true
-  createdBy?: true
   deletedAt?: true
-  deletedBy?: true
   systemId?: true
   tenantId?: true
   nativeUniqueName?: true
@@ -212,9 +200,7 @@ export type ResourceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type ResourceGroupByOutputType = {
   id: string
   createdAt: Date
-  createdBy: string | null
   deletedAt: Date | null
-  deletedBy: string | null
   systemId: string
   tenantId: string
   nativeUniqueName: string
@@ -248,9 +234,7 @@ export type ResourceWhereInput = {
   NOT?: Prisma.ResourceWhereInput | Prisma.ResourceWhereInput[]
   id?: Prisma.StringFilter<"Resource"> | string
   createdAt?: Prisma.DateTimeFilter<"Resource"> | Date | string
-  createdBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Resource"> | Date | string | null
-  deletedBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   systemId?: Prisma.StringFilter<"Resource"> | string
   tenantId?: Prisma.StringFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringFilter<"Resource"> | string
@@ -261,9 +245,7 @@ export type ResourceWhereInput = {
 export type ResourceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   systemId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
@@ -278,9 +260,7 @@ export type ResourceWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ResourceWhereInput[]
   NOT?: Prisma.ResourceWhereInput | Prisma.ResourceWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"Resource"> | Date | string
-  createdBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Resource"> | Date | string | null
-  deletedBy?: Prisma.StringNullableFilter<"Resource"> | string | null
   systemId?: Prisma.StringFilter<"Resource"> | string
   tenantId?: Prisma.StringFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringFilter<"Resource"> | string
@@ -291,9 +271,7 @@ export type ResourceWhereUniqueInput = Prisma.AtLeast<{
 export type ResourceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  createdBy?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   systemId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
@@ -312,9 +290,7 @@ export type ResourceScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ResourceScalarWhereWithAggregatesInput | Prisma.ResourceScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Resource"> | Date | string
-  createdBy?: Prisma.StringNullableWithAggregatesFilter<"Resource"> | string | null
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Resource"> | Date | string | null
-  deletedBy?: Prisma.StringNullableWithAggregatesFilter<"Resource"> | string | null
   systemId?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   tenantId?: Prisma.StringWithAggregatesFilter<"Resource"> | string
   nativeUniqueName?: Prisma.StringWithAggregatesFilter<"Resource"> | string
@@ -325,9 +301,7 @@ export type ResourceScalarWhereWithAggregatesInput = {
 export type ResourceCreateInput = {
   id: string
   createdAt?: Date | string
-  createdBy?: string | null
   deletedAt?: Date | string | null
-  deletedBy?: string | null
   systemId: string
   tenantId: string
   nativeUniqueName: string
@@ -338,9 +312,7 @@ export type ResourceCreateInput = {
 export type ResourceUncheckedCreateInput = {
   id: string
   createdAt?: Date | string
-  createdBy?: string | null
   deletedAt?: Date | string | null
-  deletedBy?: string | null
   systemId: string
   tenantId: string
   nativeUniqueName: string
@@ -351,9 +323,7 @@ export type ResourceUncheckedCreateInput = {
 export type ResourceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -364,9 +334,7 @@ export type ResourceUpdateInput = {
 export type ResourceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -377,9 +345,7 @@ export type ResourceUncheckedUpdateInput = {
 export type ResourceCreateManyInput = {
   id: string
   createdAt?: Date | string
-  createdBy?: string | null
   deletedAt?: Date | string | null
-  deletedBy?: string | null
   systemId: string
   tenantId: string
   nativeUniqueName: string
@@ -390,9 +356,7 @@ export type ResourceCreateManyInput = {
 export type ResourceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -403,9 +367,7 @@ export type ResourceUpdateManyMutationInput = {
 export type ResourceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   systemId?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   nativeUniqueName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -422,9 +384,7 @@ export type ResourceTenantIdSystemIdNativeUniqueNameCompoundUniqueInput = {
 export type ResourceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
-  deletedBy?: Prisma.SortOrder
   systemId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
@@ -439,9 +399,7 @@ export type ResourceAvgOrderByAggregateInput = {
 export type ResourceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
-  deletedBy?: Prisma.SortOrder
   systemId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
@@ -452,9 +410,7 @@ export type ResourceMaxOrderByAggregateInput = {
 export type ResourceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  createdBy?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
-  deletedBy?: Prisma.SortOrder
   systemId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   nativeUniqueName?: Prisma.SortOrder
@@ -464,10 +420,6 @@ export type ResourceMinOrderByAggregateInput = {
 
 export type ResourceSumOrderByAggregateInput = {
   version?: Prisma.SortOrder
-}
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -483,9 +435,7 @@ export type IntFieldUpdateOperationsInput = {
 export type ResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   createdAt?: boolean
-  createdBy?: boolean
   deletedAt?: boolean
-  deletedBy?: boolean
   systemId?: boolean
   tenantId?: boolean
   nativeUniqueName?: boolean
@@ -496,9 +446,7 @@ export type ResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type ResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   createdAt?: boolean
-  createdBy?: boolean
   deletedAt?: boolean
-  deletedBy?: boolean
   systemId?: boolean
   tenantId?: boolean
   nativeUniqueName?: boolean
@@ -509,9 +457,7 @@ export type ResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type ResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   createdAt?: boolean
-  createdBy?: boolean
   deletedAt?: boolean
-  deletedBy?: boolean
   systemId?: boolean
   tenantId?: boolean
   nativeUniqueName?: boolean
@@ -522,9 +468,7 @@ export type ResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type ResourceSelectScalar = {
   id?: boolean
   createdAt?: boolean
-  createdBy?: boolean
   deletedAt?: boolean
-  deletedBy?: boolean
   systemId?: boolean
   tenantId?: boolean
   nativeUniqueName?: boolean
@@ -532,7 +476,7 @@ export type ResourceSelectScalar = {
   metadata?: boolean
 }
 
-export type ResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "createdBy" | "deletedAt" | "deletedBy" | "systemId" | "tenantId" | "nativeUniqueName" | "version" | "metadata", ExtArgs["result"]["resource"]>
+export type ResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "deletedAt" | "systemId" | "tenantId" | "nativeUniqueName" | "version" | "metadata", ExtArgs["result"]["resource"]>
 
 export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Resource"
@@ -540,9 +484,7 @@ export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     createdAt: Date
-    createdBy: string | null
     deletedAt: Date | null
-    deletedBy: string | null
     systemId: string
     tenantId: string
     nativeUniqueName: string
@@ -973,9 +915,7 @@ export interface Prisma__ResourceClient<T, Null = never, ExtArgs extends runtime
 export interface ResourceFieldRefs {
   readonly id: Prisma.FieldRef<"Resource", 'String'>
   readonly createdAt: Prisma.FieldRef<"Resource", 'DateTime'>
-  readonly createdBy: Prisma.FieldRef<"Resource", 'String'>
   readonly deletedAt: Prisma.FieldRef<"Resource", 'DateTime'>
-  readonly deletedBy: Prisma.FieldRef<"Resource", 'String'>
   readonly systemId: Prisma.FieldRef<"Resource", 'String'>
   readonly tenantId: Prisma.FieldRef<"Resource", 'String'>
   readonly nativeUniqueName: Prisma.FieldRef<"Resource", 'String'>

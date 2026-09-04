@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     testEnvironment: 'node',
     testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
     collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/__tests__/**'],
@@ -11,4 +11,5 @@ export default {
     transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
     testTimeout: 10000,
     globalSetup: '<rootDir>/jest/globalSetup.ts',
+    globalTeardown: '<rootDir>/jest/globalTeardown.ts',
 };
