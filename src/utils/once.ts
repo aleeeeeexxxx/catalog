@@ -1,13 +1,18 @@
 export class Once<T> {
     private once: Promise<T> | undefined;
+    private init: () => Promise<T>;
 
-    async do(fn: () => Promise<T>) {
+    constructor(init: () => Promise<T>) {
+        this.init = init;
+    }
+
+    async get() {
         if (this.once) {
             return await this.once;
         }
 
         this.once = new Promise((resolve, reject) => {
-            fn().then(resolve).catch(reject);
+            this.init().then(resolve).catch(reject);
         });
 
         return await this.once;
