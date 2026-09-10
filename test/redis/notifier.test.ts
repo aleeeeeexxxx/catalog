@@ -1,4 +1,4 @@
-import { CountAndTimerBasedNotifier, RedisClient } from '../../src/infra';
+import { CountAndTimerBasedNotifier, RedisClient } from '../../src/dao';
 import { Generate32UUID } from '../../src/utils/uuid';
 import { WaitGroup } from '../../src/utils/waitgroup';
 import { getRedisClient } from '../setup';

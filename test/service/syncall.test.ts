@@ -8,7 +8,7 @@ import {
     StageDatastore,
     SystemDatastore,
     VERSION_REFERENCED_ONLY,
-} from '../../src/infra';
+} from '../../src/dao';
 import { AsyncJobService } from '../../src/service/asyncJob';
 import { IngestService } from '../../src/service/ingest';
 import { SyncAllService, SyncStatus } from '../../src/service/syncall';

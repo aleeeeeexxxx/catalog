@@ -3,13 +3,8 @@
  */
 
 import { createNewContext } from '../../src/context';
-import {
-    ResourceDatastore,
-    SystemDatastore,
-    DbClient,
-    StageDatastore,
-} from '../../src/infra/prisma';
-import { getTestDbClient } from '../setup';
+import { ResourceDatastore, SystemDatastore, DbClient, StageDatastore } from '../../src/dao/prisma';
+import { postgres } from '../setup';
 
 let dbClient: DbClient;
 let resources: ResourceDatastore;
@@ -17,15 +12,11 @@ let systems: SystemDatastore;
 let stage: StageDatastore;
 
 beforeAll(async () => {
-    dbClient = await getTestDbClient();
+    dbClient = await postgres.get();
 
     resources = new ResourceDatastore(dbClient);
     systems = new SystemDatastore(dbClient);
     stage = new StageDatastore(dbClient);
-});
-
-afterAll(async () => {
-    await dbClient.disconnect();
 });
 
 describe('SystemDatastore', () => {

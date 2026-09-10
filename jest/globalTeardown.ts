@@ -1,5 +1,5 @@
 import { getLogger } from '../src/logger';
-import { getTestDbClient, getRedisClient } from '../test/setup';
+import { postgres, redis } from '../test/setup';
 
 const logger = getLogger(__filename);
 
@@ -8,8 +8,7 @@ export default async function () {
 
     try {
         // Close Redis connection first (to stop any background jobs)
-        const redis = await getRedisClient();
-        await redis.quit(); // Use quit() instead of disconnect() to wait for pending commands
+        await (await redis.get()).quit(); // Use quit() instead of disconnect() to wait for pending commands
         logger.info('Redis connection closed');
     } catch (error) {
         logger.error({ error }, 'Error closing Redis connection');
@@ -17,8 +16,8 @@ export default async function () {
 
     try {
         // Close DB connection
-        const db = await getTestDbClient();
-        await db.disconnect();
+        const dbClient = await postgres.get();
+        await dbClient.disconnect();
         logger.info('DB connection closed');
     } catch (error) {
         logger.error({ error }, 'Error closing DB connection');

@@ -11,10 +11,10 @@ export interface IContext {
     tenantId: string;
 }
 
-export function createNewContext(tenantId: string): IContext {
+export function createNewContext(tenantId: string, correlationId?: string): IContext {
     return {
         tenantId,
-        correlationId: uuidv4(),
+        correlationId: correlationId ?? uuidv4(),
     };
 }
 
