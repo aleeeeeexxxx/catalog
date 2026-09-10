@@ -11,14 +11,10 @@ import { getLogger } from '../logger';
 import { Prisma } from '../../generated/prisma/client';
 import { Generate32UUID } from '../utils/uuid';
 import { AsyncTaskService, AsyncTaskUniqueId } from './task';
-import { CountAndTimerBasedNotifier, RedisClient } from '../dao';
 
 const logger = getLogger(__filename);
 
-const STAGE_NOTIFIER_TOPIC = 'stage_notifier_topic';
-const STAGE_NOTIFIER_NAME = 'stage_notifier';
 const MAX_WAITING_STAGE = 50;
-const DELAY = 60; // 1 min
 
 export type IngestCallback = (ingestedWorkflowIds: string[]) => Promise<void>;
 
@@ -29,7 +25,6 @@ export class IngestService {
     private relationshipStore: RelationshipDatastore;
 
     private taskq: AsyncTaskService;
-    private notifier: CountAndTimerBasedNotifier;
 
     private ingestCallback: IngestCallback | undefined;
 
@@ -38,10 +33,7 @@ export class IngestService {
         resourceStore: ResourceDatastore,
         systemStore: SystemDatastore,
         relationshipStore: RelationshipDatastore,
-        taskq: AsyncTaskService,
-        redis: RedisClient,
-        maxWaitingStage: number = MAX_WAITING_STAGE,
-        stageNotifyDelay: number = DELAY
+        taskq: AsyncTaskService
     ) {
         this.stageStore = stageStore;
         this.resourceStore = resourceStore;
@@ -53,14 +45,6 @@ export class IngestService {
             uniqueId: AsyncTaskUniqueId.INGEST,
             handler: this.asyncIngestTaskHandler.bind(this),
         });
-
-        this.notifier = new CountAndTimerBasedNotifier(
-            redis,
-            maxWaitingStage,
-            stageNotifyDelay,
-            this.enqueueIngestTask.bind(this),
-            STAGE_NOTIFIER_TOPIC
-        );
     }
 
     setIngestCallback(callback: IngestCallback) {
@@ -182,7 +166,7 @@ export class IngestService {
         });
 
         await this.stageStore.stage(ctx, resources, relationship, systems);
-        await this.notifier.add(STAGE_NOTIFIER_NAME, objects.length);
+        await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, null);
 
         return stageIds;
     }
@@ -223,13 +207,6 @@ export class IngestService {
 
     async countUningested(ctx: IContext, workflowId: string): Promise<number> {
         return this.stageStore.countStagesByWorkflowId(ctx, workflowId);
-    }
-
-    private async enqueueIngestTask() {
-        const ctx = createNewContext(IngestService.name);
-        logger.debug(ctx, `enqueue ingest task`);
-
-        await this.taskq.push(ctx, AsyncTaskUniqueId.INGEST, null);
     }
 
     private async asyncIngestTaskHandler(_param: any) {

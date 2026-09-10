@@ -63,10 +63,7 @@ describe.skip('Sync all workflow', () => {
             resourceStore,
             systemStore,
             relationshipStore,
-            taskq,
-            redis,
-            1,
-            1
+            taskq
         );
 
         // Initialize service with real datastores

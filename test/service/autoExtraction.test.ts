@@ -2,7 +2,6 @@ import { createNewContext } from '../../src/context';
 import { getExtractorBySystemType, IExtractor } from '../../src/extractor';
 import {
     DbClient,
-    RedisClient,
     RelationshipDatastore,
     ResourceDatastore,
     StageDatastore,
@@ -12,7 +11,7 @@ import { AsyncTaskService } from '../../src/service/task';
 import { AutoExtractionService } from '../../src/service/autoExtraction';
 import { IngestService } from '../../src/service/ingest';
 import { sleep } from '../../src/utils/time';
-import { redisClient, postgres, mqConn } from '../setup';
+import { postgres, mqConn } from '../setup';
 import { IRabbitMqConfig } from '../../src/mq';
 
 // Mock the extractor module
@@ -22,7 +21,6 @@ jest.mock('../../src/extractor', () => ({
 // Mock dependencies
 let mockExtractor: jest.Mocked<IExtractor>;
 
-let redis: RedisClient;
 let taskq: AsyncTaskService;
 let service: AutoExtractionService;
 let ingest: IngestService;
@@ -44,7 +42,6 @@ describe.skip('Auto extraction', () => {
         // Setup getExtractorBySystemType to return mock extractor
         (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
 
-        redis = await redisClient.get();
         const mq = await mqConn.get();
         taskq = new AsyncTaskService({ suffix: 'auto_extraction_test' } as IRabbitMqConfig, mq);
 
@@ -60,10 +57,7 @@ describe.skip('Auto extraction', () => {
             resourceStore,
             systemStore,
             relationshipStore,
-            taskq,
-            redis,
-            1,
-            1
+            taskq
         );
 
         // Initialize service with real datastores
