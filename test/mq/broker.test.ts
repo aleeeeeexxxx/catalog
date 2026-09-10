@@ -97,7 +97,12 @@ describe('RabbitMQ Delay Broker', () => {
         const mockCfg = {
             suffix: `delay_broker_test_${Date.now()}`,
         } as IRabbitMqConfig;
-        delayBroker = new RabbitMqDelayBroker(conn, 'test_delay_exchange', 'test_delay_queue', mockCfg);
+        delayBroker = new RabbitMqDelayBroker(
+            conn,
+            'test_delay_exchange',
+            'test_delay_queue',
+            mockCfg
+        );
 
         mockDelayHandler.mockClear();
     });
@@ -129,7 +134,7 @@ describe('RabbitMQ Delay Broker', () => {
         delayBroker.consumeDelay(ctx, testTopic, mockDelayHandler, delayMs);
         await delayBroker.start(ctx);
 
-        await delayBroker.sendDelayed(ctx, testTopic, { message: 'delayed hello' }, delayMs);
+        await delayBroker.sendDelayed(ctx, testTopic, { message: 'delayed hello' });
 
         await waiter.wait();
         expect(mockDelayHandler).toHaveBeenCalledTimes(1);
@@ -162,8 +167,8 @@ describe('RabbitMQ Delay Broker', () => {
         delayBroker.consumeDelay(ctx, topic2, handler2, delayMs);
         await delayBroker.start(ctx);
 
-        await delayBroker.sendDelayed(ctx, topic1, { message: 'msg1' }, delayMs);
-        await delayBroker.sendDelayed(ctx, topic2, { message: 'msg2' }, delayMs);
+        await delayBroker.sendDelayed(ctx, topic1, { message: 'msg1' });
+        await delayBroker.sendDelayed(ctx, topic2, { message: 'msg2' });
 
         await waiter.wait();
         expect(handler1).toHaveBeenCalledTimes(1);
@@ -188,7 +193,7 @@ describe('RabbitMQ Delay Broker', () => {
             const content = JSON.parse(msg.content.toString());
             receivedMessages.push({
                 message: content.message,
-                time: Date.now() - startTime
+                time: Date.now() - startTime,
             });
             waiter.done();
         });
@@ -197,8 +202,8 @@ describe('RabbitMQ Delay Broker', () => {
         delayBroker.consumeDelay(ctx, testTopic, mockDelayHandler, longDelay);
         await delayBroker.start(ctx);
 
-        await delayBroker.sendDelayed(ctx, testTopic, { message: 'short' }, shortDelay);
-        await delayBroker.sendDelayed(ctx, testTopic, { message: 'long' }, longDelay);
+        await delayBroker.sendDelayed(ctx, testTopic, { message: 'short' });
+        await delayBroker.sendDelayed(ctx, testTopic, { message: 'long' });
 
         await waiter.wait();
         expect(mockDelayHandler).toHaveBeenCalledTimes(2);

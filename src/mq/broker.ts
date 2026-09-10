@@ -92,11 +92,9 @@ export class RabbitMqBroker<T extends string> {
     }
 
     async send(ctx: IContext, routingKey: T, msgBody: any) {
-        const santizedRoutingKey = this.getRoutingKey(routingKey);
-
         logger.debug(
             ctx,
-            `Sending message to exchange: ${this.exchange}, routingKey: ${santizedRoutingKey}`
+            `Sending message to exchange: ${this.exchange}, routingKey: ${routingKey}`
         );
 
         const send = this.publishMessage(ctx, this.exchange, routingKey, msgBody);
@@ -201,20 +199,12 @@ export class RabbitMqDelayBroker<T extends string> extends RabbitMqBroker<T> {
         logger.info(ctx, `RabbitMQ delay broker started with ${this.delayTimes.size} delay queues`);
     }
 
-    async sendDelayed(ctx: IContext, routingKey: T, msgBody: any, delayMs: number) {
-        const santizedRoutingKey = this.getRoutingKey(routingKey);
-
-        logger.debug(
-            ctx,
-            `Sending delayed message (${delayMs}ms) via routing key: ${santizedRoutingKey}`
-        );
+    async sendDelayed(ctx: IContext, routingKey: T, msgBody: any) {
+        logger.debug(ctx, `Sending delayed message via routing key: ${routingKey}`);
 
         // Publish to delay exchange with topic routing key
         const send = this.publishMessage(ctx, this.delayExchange, routingKey, msgBody);
 
-        logger.debug(
-            ctx,
-            `Delayed message sent successfully, publish result: ${send}, delay: ${delayMs}ms`
-        );
+        logger.debug(ctx, `Delayed message sent successfully, publish result: ${send}`);
     }
 }

@@ -1,4 +1,4 @@
-import { createNewContext, IContext } from '../context';
+import { createGlobalContext, createNewContext, IContext } from '../context';
 import {
     IStageResource,
     Relationship,
@@ -10,7 +10,7 @@ import {
 import { getLogger } from '../logger';
 import { Prisma } from '../../generated/prisma/client';
 import { Generate32UUID } from '../utils/uuid';
-import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
+import { AsyncTaskService, AsyncTaskUniqueId } from './task';
 import { CountAndTimerBasedNotifier, RedisClient } from '../dao';
 
 const logger = getLogger(__filename);
@@ -28,7 +28,7 @@ export class IngestService {
     private systemStore: SystemDatastore;
     private relationshipStore: RelationshipDatastore;
 
-    private taskq: AsyncJobService;
+    private taskq: AsyncTaskService;
     private notifier: CountAndTimerBasedNotifier;
 
     private ingestCallback: IngestCallback | undefined;
@@ -38,7 +38,7 @@ export class IngestService {
         resourceStore: ResourceDatastore,
         systemStore: SystemDatastore,
         relationshipStore: RelationshipDatastore,
-        taskq: AsyncJobService,
+        taskq: AsyncTaskService,
         redis: RedisClient,
         maxWaitingStage: number = MAX_WAITING_STAGE,
         stageNotifyDelay: number = DELAY
@@ -49,7 +49,7 @@ export class IngestService {
         this.relationshipStore = relationshipStore;
 
         this.taskq = taskq;
-        this.taskq.register({
+        this.taskq.register(createGlobalContext(), {
             uniqueId: AsyncTaskUniqueId.INGEST,
             handler: this.asyncIngestTaskHandler.bind(this),
         });
@@ -233,7 +233,7 @@ export class IngestService {
     }
 
     private async asyncIngestTaskHandler(_param: any) {
-        const ctx = createNewContext(IngestService.name);
+        const ctx = createGlobalContext();
         const maxStage = MAX_WAITING_STAGE + 10;
 
         await this.ingest(ctx, maxStage);
