@@ -13,6 +13,7 @@ import { IngestService } from '../../src/service/ingest';
 import { sleep } from '../../src/utils/time';
 import { postgres, mqConn } from '../setup';
 import { IRabbitMqConfig } from '../../src/mq';
+import amqp from 'amqplib';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
@@ -25,12 +26,13 @@ let taskq: AsyncTaskService;
 let service: AutoExtractionService;
 let ingest: IngestService;
 let db: DbClient;
+let mq: amqp.ChannelModel;
 let resourceStore: ResourceDatastore;
 let systemStore: SystemDatastore;
 let stageStore: StageDatastore;
 let relationshipStore: RelationshipDatastore;
 
-describe.skip('Auto extraction', () => {
+describe('Auto extraction', () => {
     beforeAll(async () => {
         // Create mock extractor
         mockExtractor = {
@@ -42,7 +44,7 @@ describe.skip('Auto extraction', () => {
         // Setup getExtractorBySystemType to return mock extractor
         (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
 
-        const mq = await mqConn.get();
+        mq = await mqConn.get();
         taskq = new AsyncTaskService({ suffix: 'auto_extraction_test' } as IRabbitMqConfig, mq);
 
         db = await postgres.get();
@@ -62,6 +64,12 @@ describe.skip('Auto extraction', () => {
 
         // Initialize service with real datastores
         service = new AutoExtractionService(ingest);
+
+        await taskq.start(createNewContext('test-auto'));
+    });
+
+    afterAll(async () => {
+        await taskq.close();
     });
 
     it('delete', async () => {
