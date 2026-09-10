@@ -82,11 +82,6 @@ jobs:
               env:
                   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catalog_test
 
-            - name: Generate Prisma Client
-              run: npx prisma generate
-              env:
-                  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/catalog_test
-
             - name: Build
               run: npm run build
 
