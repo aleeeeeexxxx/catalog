@@ -35,7 +35,7 @@ let systemStore: SystemDatastore;
 let stageStore: StageDatastore;
 let relationshipStore: RelationshipDatastore;
 
-describe.skip('Sync all workflow', () => {
+describe('Sync all workflow', () => {
     beforeAll(async () => {
         // Create mock extractor
         mockExtractor = {
@@ -68,6 +68,8 @@ describe.skip('Sync all workflow', () => {
 
         // Initialize service with real datastores
         service = new SyncAllService(resourceStore, systemStore, taskq, redis, ingest);
+
+        await taskq.start(createNewContext('test-auto'));
     });
 
     it('sync all should complete', async () => {
