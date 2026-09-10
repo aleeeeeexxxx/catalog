@@ -1,31 +1,33 @@
 import { createNewContext } from '../../src/context';
-import { RedisClient } from '../../src/dao';
-import { AsyncJobService, AsyncTaskUniqueId } from '../../src/service/asyncJob';
-import { Generate32UUID } from '../../src/utils/uuid';
+import { IRabbitMqConfig } from '../../src/mq';
+import { AsyncTaskService, AsyncTaskUniqueId } from '../../src/service/task';
 import { WaitGroup } from '../../src/utils/waitgroup';
-import { redisClient } from '../setup';
+import { mqConn } from '../setup';
+import amqp from 'amqplib';
 
-let redis: RedisClient;
+let mq: amqp.ChannelModel;
 
-describe.skip('AsyncJobService', () => {
+describe('AsyncTaskService', () => {
     beforeAll(async () => {
-        redis = await redisClient.get();
+        mq = await mqConn.get();
     });
 
     it('push job', async () => {
         const ctx = createNewContext('AsyncJobService');
-        const taskq = new AsyncJobService(redis, 2, Generate32UUID());
-        const taskUniqueId = 'test' as AsyncTaskUniqueId;
+        const taskq = new AsyncTaskService({ suffix: 'AsyncTaskService' } as IRabbitMqConfig, mq);
 
         const wg = new WaitGroup();
-
         const taskHandler = jest.fn().mockImplementation(async () => {
             wg.done();
         });
-        taskq.register({
+
+        const taskUniqueId = 'test' as AsyncTaskUniqueId;
+        taskq.register(ctx, {
             uniqueId: taskUniqueId,
             handler: taskHandler,
         });
+
+        await taskq.start(ctx);
 
         wg.add(3);
         for (let i = 0; i < 3; i++) {

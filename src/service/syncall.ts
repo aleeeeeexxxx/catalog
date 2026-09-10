@@ -1,4 +1,4 @@
-import { createNewContext, IContext } from '../context';
+import { createGlobalContext, createNewContext, IContext } from '../context';
 import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
 import {
     IStageResource,
@@ -11,7 +11,7 @@ import {
     VERSION_REFERENCED_ONLY,
 } from '../dao';
 import { getLogger } from '../logger';
-import { AsyncJobService, AsyncTaskUniqueId } from './asyncJob';
+import { AsyncTaskService, AsyncTaskUniqueId } from './task';
 import { convertExtractedResourceToStage } from './autoExtraction';
 import { IngestService } from './ingest';
 
@@ -31,14 +31,14 @@ export interface ISyncAllStatus {
 export class SyncAllService {
     private resourceStore: ResourceDatastore;
     private systemStore: SystemDatastore;
-    private taskq: AsyncJobService;
+    private taskq: AsyncTaskService;
     private workflow: SyncAllWorkflow;
     private ingest: IngestService;
 
     constructor(
         resourceStore: ResourceDatastore,
         systemStore: SystemDatastore,
-        taskq: AsyncJobService,
+        taskq: AsyncTaskService,
         redis: RedisClient,
         ingest: IngestService
     ) {
@@ -47,15 +47,16 @@ export class SyncAllService {
         this.workflow = new SyncAllWorkflow(redis);
 
         this.taskq = taskq;
-        this.taskq.register({
+        const ctx = createGlobalContext();
+        this.taskq.register(ctx, {
             uniqueId: AsyncTaskUniqueId.BROWSE,
             handler: this.handleBrowse.bind(this),
         });
-        this.taskq.register({
+        this.taskq.register(ctx, {
             uniqueId: AsyncTaskUniqueId.EXTRACT,
             handler: this.handleExtract.bind(this),
         });
-        this.taskq.register({
+        this.taskq.register(ctx, {
             uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
             handler: this.handleMonitorIngest.bind(this),
         });

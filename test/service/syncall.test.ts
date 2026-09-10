@@ -10,12 +10,13 @@ import {
     SystemDatastore,
     VERSION_REFERENCED_ONLY,
 } from '../../src/dao';
-import { AsyncJobService } from '../../src/service/asyncJob';
+import { AsyncTaskService } from '../../src/service/task';
 import { IngestService } from '../../src/service/ingest';
 import { SyncAllService } from '../../src/service/syncall';
 import { sleep } from '../../src/utils/time';
-import { redisClient, postgres } from '../setup';
+import { redisClient, postgres, mqConn } from '../setup';
 import { getExtractorBySystemType } from '../../src/extractor';
+import { IRabbitMqConfig } from '../../src/mq';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
@@ -25,7 +26,7 @@ jest.mock('../../src/extractor', () => ({
 let mockExtractor: jest.Mocked<IExtractor>;
 
 let redis: RedisClient;
-let taskq: AsyncJobService;
+let taskq: AsyncTaskService;
 let service: SyncAllService;
 let ingest: IngestService;
 let db: DbClient;
@@ -47,7 +48,8 @@ describe.skip('Sync all workflow', () => {
         (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
 
         redis = await redisClient.get();
-        taskq = new AsyncJobService(redis);
+        const mq = await mqConn.get();
+        taskq = new AsyncTaskService({ suffix: 'sync_all_test' } as IRabbitMqConfig, mq);
 
         db = await postgres.get();
         resourceStore = new ResourceDatastore(db);
