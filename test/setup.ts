@@ -40,7 +40,7 @@ export const postgres = new Once<DbClient>(async (): Promise<DbClient> => {
     return db;
 });
 
-export const redis = new Once<RedisClient>(async (): Promise<RedisClient> => {
+export const redisClient = new Once<RedisClient>(async (): Promise<RedisClient> => {
     logger.info('Creating test Redis client');
 
     const cfg = loadConfig<IRedisConfig>('redis', loadEnvRedisConfig);
