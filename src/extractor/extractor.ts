@@ -1,5 +1,5 @@
 import { IContext } from '../context';
-import { IResource, IStageSystem } from '../infra';
+import { IResource, IStageSystem } from '../dao';
 
 export interface IExtractedMetadata {
     resource: IResource;

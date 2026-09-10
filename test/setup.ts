@@ -1,56 +1,16 @@
-import { DbClient } from '../src/infra/prisma/client';
-import { getDatabaseUrl, IDbConfig } from '../src/infra/prisma/config';
-import { IRedisConfig } from '../src/infra/redis/client';
-import { Once } from '../src/utils/once';
+import { DbClient } from '../src/dao/prisma/client';
+import { getDatabaseUrl, IDbConfig, loadEnvDbConfig } from '../src/dao/prisma/config';
 import { getLogger } from '../src/logger';
 import { createNewContext } from '../src/context';
-import { RedisClient } from '../src/infra';
+import { IRedisConfig, loadEnvRedisConfig, RedisClient } from '../src/dao';
 import { Prisma } from '../generated/prisma/client';
+import { Once } from '../src/utils/once';
+import amqp from 'amqplib';
+import { createRabbitMqConnection, IRabbitMqConfig, loadEnvRabbitMqConfig } from '../src/mq';
 
 const logger = getLogger(__filename);
 
-function loadDevDbConfig(): IDbConfig {
-    // Priority: environment variables > dev config file
-    if (process.env.DATABASE_URL) {
-        // Parse DATABASE_URL (e.g., postgresql://user:password@host:port/database)
-        const url = new URL(process.env.DATABASE_URL);
-        return {
-            host: url.hostname,
-            port: parseInt(url.port || '5432', 10),
-            user: url.username,
-            password: url.password,
-            database: url.pathname.slice(1), // Remove leading '/'
-        };
-    }
-
-    // Fallback to dev config file for local development
-    const config = require('../dev/db.config.json');
-    return {
-        host: config.host,
-        port: parseInt(config.port, 10),
-        user: config.user,
-        password: config.password,
-        database: config.database,
-    };
-}
-
-async function createTestDbClient(): Promise<DbClient> {
-    logger.info('Creating test tenant DB client');
-
-    const cfg = loadDevDbConfig();
-    logger.info(`Loaded DB config: ${getDatabaseUrl(cfg)}`);
-
-    const db = new DbClient(cfg);
-
-    logger.info('Connecting to tenant db');
-    await db.connect();
-
-    logger.info('Test tenant DB client created successfully');
-    return db;
-}
-
-export async function clearTestDb() {
-    const db = await getTestDbClient();
+export async function clearDb(db: DbClient) {
     const ctx = createNewContext('setup');
 
     logger.info(`Deleting all current data in ${ctx.tenantId}`);
@@ -65,49 +25,53 @@ export async function clearTestDb() {
     });
 }
 
-const dbClient = new Once<DbClient>();
+export const postgres = new Once<DbClient>(async (): Promise<DbClient> => {
+    logger.info('Creating test tenant DB client');
 
-export async function getTestDbClient(): Promise<DbClient> {
-    return await dbClient.do(createTestDbClient);
-}
+    const cfg = loadConfig<IDbConfig>('db', loadEnvDbConfig);
+    logger.info(`Loaded DB config: ${getDatabaseUrl(cfg)}`);
 
-function loadDevRedisConfig(): IRedisConfig {
-    // Priority: environment variables > dev config file
-    if (process.env.REDIS_HOST) {
-        return {
-            host: process.env.REDIS_HOST,
-            port: parseInt(process.env.REDIS_PORT || '6379', 10),
-            password: process.env.REDIS_PASSWORD,
-            db: process.env.REDIS_DB ? parseInt(process.env.REDIS_DB, 10) : undefined,
-            keyPrefix: process.env.REDIS_KEY_PREFIX,
-        };
-    }
+    const db = new DbClient(cfg);
 
-    // Fallback to dev config file for local development
-    const config = require('../dev/redis.config.json');
-    return {
-        host: config.host,
-        port: parseInt(config.port, 10),
-        password: config.password,
-        db: config.db,
-        keyPrefix: config.keyPrefix,
-    };
-}
+    logger.info('Connecting to tenant db');
+    await db.connect();
 
-async function createTestRedisClient(): Promise<RedisClient> {
+    logger.info('Test tenant DB client created successfully');
+    return db;
+});
+
+export const redis = new Once<RedisClient>(async (): Promise<RedisClient> => {
     logger.info('Creating test Redis client');
 
-    const cfg = loadDevRedisConfig();
+    const cfg = loadConfig<IRedisConfig>('redis', loadEnvRedisConfig);
     logger.info(`Loaded Redis config: ${cfg.host}:${cfg.port}/${cfg.db ?? 0}`);
 
     const client = RedisClient.New(cfg);
 
     logger.info('Test Redis client created successfully');
     return client;
+});
+
+export const mqConn = new Once<amqp.ChannelModel>(async (): Promise<amqp.ChannelModel> => {
+    logger.info('Creating test RabbitMQ channel');
+
+    const cfg = loadConfig<IRabbitMqConfig>('rabbitmq', loadEnvRabbitMqConfig);
+    logger.info(`Loaded RabbitMQ config: ${cfg.host}:${cfg.port}`);
+
+    const connection = await createRabbitMqConnection(cfg);
+
+    logger.info('Test RabbitMQ channel created successfully');
+    return connection;
+});
+
+export function loadDevConfig<T>(component: 'redis' | 'db' | 'rabbitmq'): T {
+    const config = require(`../dev/${component}.config.json`);
+    return config as T;
 }
 
-const redis = new Once<RedisClient>();
-
-export async function getRedisClient(): Promise<RedisClient> {
-    return await redis.do(createTestRedisClient);
+export function loadConfig<T>(component: 'redis' | 'db' | 'rabbitmq', envLoader: () => T): T {
+    if (process.env.LOAD_CONFIG_ENV) {
+        return envLoader();
+    }
+    return loadDevConfig(component);
 }

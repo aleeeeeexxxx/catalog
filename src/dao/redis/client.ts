@@ -4,16 +4,9 @@
 
 import Redis from 'ioredis';
 import { getLogger } from '../../logger';
+import { IRedisConfig } from './config';
 
 const logger = getLogger(__filename);
-
-export interface IRedisConfig {
-    host: string;
-    port: number;
-    password?: string;
-    db?: number;
-    keyPrefix?: string;
-}
 
 export class RedisClient extends Redis {
     static New(config: IRedisConfig): RedisClient {
