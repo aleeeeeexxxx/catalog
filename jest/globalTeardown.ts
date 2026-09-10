@@ -1,30 +1,53 @@
 import { getLogger } from '../src/logger';
-import { postgres, redis } from '../test/setup';
+import { postgres, redisClient, mqConn } from '../test/setup';
 
 const logger = getLogger(__filename);
 
 export default async function () {
     logger.warn('\n===================  GLOBAL TEARDOWN START ===================\n');
 
-    try {
-        // Close Redis connection first (to stop any background jobs)
-        await (await redis.get()).quit(); // Use quit() instead of disconnect() to wait for pending commands
-        logger.info('Redis connection closed');
-    } catch (error) {
-        logger.error({ error }, 'Error closing Redis connection');
-    }
+    // Close connections in reverse order of initialization
+    const closePromises: Promise<void>[] = [];
 
-    try {
-        // Close DB connection
-        const dbClient = await postgres.get();
-        await dbClient.disconnect();
-        logger.info('DB connection closed');
-    } catch (error) {
-        logger.error({ error }, 'Error closing DB connection');
-    }
+    closePromises.push(
+        mqConn
+            .get()
+            .then(async connection => {
+                await connection.close();
+                logger.info('RabbitMQ connection closed');
+            })
+            .catch(error => {
+                logger.error({ error }, 'Error closing RabbitMQ connection');
+            })
+    );
 
-    // Give a small delay to allow any remaining async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    closePromises.push(
+        redisClient
+            .get()
+            .then(async client => {
+                await client.quit();
+                logger.info('Redis connection closed');
+            })
+            .catch(error => {
+                logger.error({ error }, 'Error closing Redis connection');
+            })
+    );
+
+    // Close DB connection
+    closePromises.push(
+        postgres
+            .get()
+            .then(async dbClient => {
+                await dbClient.disconnect();
+                logger.info('DB connection closed');
+            })
+            .catch(error => {
+                logger.error({ error }, 'Error closing DB connection');
+            })
+    );
+
+    // Wait for all connections to close
+    await Promise.all(closePromises);
 
     logger.warn('\n===================  GLOBAL TEARDOWN END   ===================\n');
 }

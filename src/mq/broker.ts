@@ -179,10 +179,7 @@ export class RabbitMqDelayBroker<T extends string> extends RabbitMqBroker<T> {
         for (const delay of this.delayTimes) {
             const delayQueueName = `${this.queue}_delay_${delay}`;
 
-            logger.debug(
-                ctx,
-                `Creating delay queue: ${delayQueueName} with delay: ${delay}ms`
-            );
+            logger.debug(ctx, `Creating delay queue: ${delayQueueName} with delay: ${delay}ms`);
 
             // Assert delay queue with TTL and DLX settings
             await this.channel!.assertQueue(delayQueueName, {
@@ -201,10 +198,7 @@ export class RabbitMqDelayBroker<T extends string> extends RabbitMqBroker<T> {
             );
         }
 
-        logger.info(
-            ctx,
-            `RabbitMQ delay broker started with ${this.delayTimes.size} delay queues`
-        );
+        logger.info(ctx, `RabbitMQ delay broker started with ${this.delayTimes.size} delay queues`);
     }
 
     async sendDelayed(ctx: IContext, routingKey: T, msgBody: any, delayMs: number) {
