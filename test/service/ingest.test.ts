@@ -1,23 +1,43 @@
-import { CountAndTimerBasedNotifier, RedisClient } from '../../src/dao';
+import { createNewContext } from '../../src/context';
+import { RedisClient } from '../../src/dao';
+import { IRabbitMqConfig } from '../../src/mq';
+import { Clock } from '../../src/service/ingest';
+import { AsyncTaskService } from '../../src/service/task';
 import { Generate32UUID } from '../../src/utils/uuid';
 import { WaitGroup } from '../../src/utils/waitgroup';
-import { redisClient } from '../setup';
+import { mqConn, redisClient } from '../setup';
+import amqp from 'amqplib';
 
 let redis: RedisClient;
-let notifier: CountAndTimerBasedNotifier;
+let clock: Clock;
+let mq: amqp.ChannelModel;
+let taskq: AsyncTaskService;
+
 const mockCallback = jest.fn();
 
-describe.skip('notifier', () => {
+describe.skip('clock', () => {
+    const ctx = createNewContext('clock-test');
+
     beforeAll(async () => {
+        mq = await mqConn.get();
         redis = await redisClient.get();
-        notifier = new CountAndTimerBasedNotifier(redis, 3, 1, mockCallback, Generate32UUID());
+
+        taskq = new AsyncTaskService({ suffix: 'AsyncTaskService' } as IRabbitMqConfig, mq);
+
+        clock = new Clock(redis, 3, 1, mockCallback, taskq, Generate32UUID());
+
+        await taskq.start(ctx);
+    });
+
+    afterAll(async () => {
+        await taskq.close();
     });
 
     afterEach(() => {
         mockCallback.mockClear();
     });
 
-    it('trigger by add, one by one', async () => {
+    it.only('trigger by add, one by one', async () => {
         const testKey = 'trigger by add, one by one';
 
         const waiter = new WaitGroup(500);
@@ -27,9 +47,9 @@ describe.skip('notifier', () => {
             waiter.done();
         });
 
-        await notifier.add(testKey, 1);
-        await notifier.add(testKey, 1);
-        await notifier.add(testKey, 1);
+        await clock.add(ctx, testKey, 1);
+        await clock.add(ctx, testKey, 1);
+        await clock.add(ctx, testKey, 1);
 
         await waiter.wait();
     });
@@ -44,7 +64,7 @@ describe.skip('notifier', () => {
             waiter.done();
         });
 
-        await notifier.add(testKey, 3);
+        await clock.add(ctx, testKey, 3);
 
         await waiter.wait();
     });
@@ -63,7 +83,7 @@ describe.skip('notifier', () => {
             end = Date.now();
         });
 
-        await notifier.add(testKey, 2);
+        await clock.add(ctx, testKey, 2);
         await waiter.wait();
 
         expect(end).toBeDefined();
@@ -84,7 +104,7 @@ describe.skip('notifier', () => {
             end = Date.now();
         });
 
-        await notifier.add(testKey, 4);
+        await clock.add(ctx, testKey, 4);
         await waiter.wait();
 
         expect(end).toBeDefined();
@@ -101,7 +121,7 @@ describe.skip('notifier', () => {
             waiter.done();
         });
 
-        await notifier.add(testKey, 2);
+        await clock.add(ctx, testKey, 2);
         await waiter.wait();
 
         // new after last hit, should trigger after delay
@@ -112,7 +132,7 @@ describe.skip('notifier', () => {
             waiter2.done();
         });
 
-        await notifier.add(testKey, 1);
+        await clock.add(ctx, testKey, 1);
         await waiter2.wait();
 
         // new after last hit, should trigger after delay
@@ -123,7 +143,7 @@ describe.skip('notifier', () => {
             waiter3.done();
         });
 
-        await notifier.add(testKey, 3);
+        await clock.add(ctx, testKey, 3);
         await waiter2.wait();
     });
 });

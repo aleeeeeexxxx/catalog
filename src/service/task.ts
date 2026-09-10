@@ -19,6 +19,8 @@ export enum AsyncTaskUniqueId {
     SNAPSHOT = 'snapshot',
     EXTRACT = 'extract',
     MONITOR_INGEST = 'monitoring',
+
+    COUNTER_CLOCK = 'cc',
 }
 
 export type TaskHandler<T> = (param: T) => Promise<void>;
