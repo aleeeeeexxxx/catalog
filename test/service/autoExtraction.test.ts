@@ -8,11 +8,12 @@ import {
     StageDatastore,
     SystemDatastore,
 } from '../../src/dao';
-import { AsyncJobService } from '../../src/service/asyncJob';
+import { AsyncTaskService } from '../../src/service/task';
 import { AutoExtractionService } from '../../src/service/autoExtraction';
 import { IngestService } from '../../src/service/ingest';
 import { sleep } from '../../src/utils/time';
-import { redisClient, postgres } from '../setup';
+import { redisClient, postgres, mqConn } from '../setup';
+import { IRabbitMqConfig } from '../../src/mq';
 
 // Mock the extractor module
 jest.mock('../../src/extractor', () => ({
@@ -22,7 +23,7 @@ jest.mock('../../src/extractor', () => ({
 let mockExtractor: jest.Mocked<IExtractor>;
 
 let redis: RedisClient;
-let taskq: AsyncJobService;
+let taskq: AsyncTaskService;
 let service: AutoExtractionService;
 let ingest: IngestService;
 let db: DbClient;
@@ -44,7 +45,8 @@ describe.skip('Auto extraction', () => {
         (getExtractorBySystemType as jest.Mock).mockReturnValue(mockExtractor);
 
         redis = await redisClient.get();
-        taskq = new AsyncJobService(redis);
+        const mq = await mqConn.get();
+        taskq = new AsyncTaskService({ suffix: 'auto_extraction_test' } as IRabbitMqConfig, mq);
 
         db = await postgres.get();
         resourceStore = new ResourceDatastore(db);
