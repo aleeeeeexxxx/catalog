@@ -48,10 +48,9 @@ export class AsyncTaskService {
         await this.broker.close();
     }
 
-    register<T>(ctx: IContext, task: IAsyncTaskDescription<T>) {
+    register<T>(task: IAsyncTaskDescription<T>) {
         if (task.delay) {
             this.broker.consumeDelay(
-                ctx,
                 task.uniqueId,
                 this.wrapHandler(task.handler),
                 task.delay * SECOND
@@ -62,7 +61,7 @@ export class AsyncTaskService {
             return;
         }
 
-        this.broker.consume(ctx, task.uniqueId, this.wrapHandler(task.handler));
+        this.broker.consume(task.uniqueId, this.wrapHandler(task.handler));
     }
 
     async push<T>(ctx: IContext, taskId: AsyncTaskUniqueId, param: T) {

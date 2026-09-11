@@ -58,12 +58,12 @@ export class RabbitMqBroker<T extends string> {
         this.queue = `${queue}_${cfg.suffix}`;
     }
 
-    consume(ctx: IContext, topic: T, handler: MessageHandler) {
+    consume(topic: T, handler: MessageHandler) {
         if (this.handler.has(topic)) {
             throw new Error(`Handler already registered for topic: ${topic}`);
         }
 
-        logger.debug(ctx, `Registering consumer for topic: ${topic}`);
+        logger.debug(`Registering consumer for topic: ${topic}`);
         this.handler.set(topic, handler);
     }
 
@@ -157,13 +157,13 @@ export class RabbitMqDelayBroker<T extends string> extends RabbitMqBroker<T> {
         this.delayTimes = new Set();
     }
 
-    consumeDelay(ctx: IContext, topic: T, handler: MessageHandler, delay: number) {
-        logger.debug(ctx, `Registering delay consumer for topic: ${topic}, delay: ${delay}ms`);
+    consumeDelay(topic: T, handler: MessageHandler, delay: number) {
+        logger.debug(`Registering delay consumer for topic: ${topic}, delay: ${delay}ms`);
         this.delayTimes.add(delay);
 
         // Also register the handler in parent class for normal consumption
         if (!this.handler.has(topic)) {
-            super.consume(ctx, topic, handler);
+            super.consume(topic, handler);
         }
     }
 
