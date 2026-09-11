@@ -5,8 +5,8 @@ import {
     ISystem,
     RedisClient,
     ResourceDatastore,
-    SyncAllWorkflow,
-    SyncStatus,
+    SyncallStatus,
+    SyncallWorkflowDatastore,
     SystemDatastore,
     VERSION_REFERENCED_ONLY,
 } from '../dao';
@@ -19,20 +19,11 @@ const logger = getLogger(__filename);
 
 const errorSystemNotExist = new Error('system not exist');
 
-export interface IObjectsToRefresh {
-    deleted: IBrowseResult[];
-    outdated: string[];
-}
-
-export interface ISyncAllStatus {
-    status: SyncStatus;
-}
-
 export class SyncAllService {
     private resourceStore: ResourceDatastore;
     private systemStore: SystemDatastore;
     private taskq: AsyncTaskService;
-    private workflow: SyncAllWorkflow;
+    private workflow: SyncallWorkflowDatastore;
     private ingest: IngestService;
 
     constructor(
@@ -44,7 +35,7 @@ export class SyncAllService {
     ) {
         this.resourceStore = resourceStore;
         this.systemStore = systemStore;
-        this.workflow = new SyncAllWorkflow(redis);
+        this.workflow = new SyncallWorkflowDatastore(redis);
 
         this.taskq = taskq;
         this.taskq.register({
@@ -65,7 +56,7 @@ export class SyncAllService {
     }
 
     async start(ctx: IContext, systemId: string): Promise<string> {
-        logger.info(ctx, `Starting sync for system: ${systemId}`);
+        logger.info(ctx, `starting sync all for system: ${systemId}`);
 
         const target = await this.systemStore.get(ctx, systemId);
         if (!target) {
@@ -73,24 +64,20 @@ export class SyncAllService {
             throw errorSystemNotExist;
         }
 
-        const workflowId = await this.workflow.createNewWorkflow(
-            ctx.tenantId,
-            ctx.correlationId,
-            target
-        );
+        const workflowId = await this.workflow.createNewWorkflow(ctx, target);
 
-        logger.info(ctx, `Workflow created, workflow id=${workflowId}`);
+        logger.info(ctx, `sync all workflow created, workflow id=${workflowId}`);
 
-        const jobId = await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
-        logger.info(ctx, `Browse job pushed, jobid=${jobId}`);
+        await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
+        logger.info(ctx, `browse job pushed`);
 
         return workflowId;
     }
 
     async handleBrowse(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.BROWSING);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSING);
 
-        const desc = await this.workflow.getWorkflowDescription(workflowId);
+        const desc = await this.workflow.getWorkflow(workflowId);
         if (!desc) {
             logger.error({ workflowId }, 'Workflow description not found');
             return;
@@ -127,16 +114,16 @@ export class SyncAllService {
         await this.stageDeletedResources(ctx, deleted, desc.system, workflowId);
         await this.workflow.cacheOutdated(workflowId, outdated);
 
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.BROWSED);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSED);
 
         await this.taskq.push(ctx, AsyncTaskUniqueId.EXTRACT, workflowId);
         logger.info(ctx, 'Browse completed');
     }
 
     async handleExtract(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.EXTRACTING);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.EXTRACTING);
 
-        const desc = await this.workflow.getWorkflowDescription(workflowId);
+        const desc = await this.workflow.getWorkflow(workflowId);
         if (!desc) {
             logger.error({ workflowId }, 'Workflow description not found');
             return;
@@ -169,14 +156,14 @@ export class SyncAllService {
 
         logger.info(ctx, 'Extract completed');
 
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.INGESTING);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.INGESTING);
     }
 
     async handleMonitorIngest(workflowIds: string[]) {
         for (let workflowId of workflowIds) {
             logger.info(`resources are ingested for workflow, workflow id=${workflowId}`);
 
-            const desc = await this.workflow.getWorkflowDescription(workflowId);
+            const desc = await this.workflow.getWorkflow(workflowId);
             if (!desc) {
                 logger.error({ workflowId }, 'Workflow description not found');
                 return;
@@ -184,7 +171,7 @@ export class SyncAllService {
             const ctx = createNewContext(desc.tenantId);
             const left = await this.ingest.countUningested(ctx, workflowId);
             if (left === 0) {
-                await this.workflow.setWorkflowStatus(workflowId, SyncStatus.COMPLETED);
+                await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.COMPLETED);
                 logger.info(ctx, 'Workflow completed');
             } else {
                 logger.info(ctx, `Ingest monitoring: ${left} remaining`);
@@ -192,12 +179,9 @@ export class SyncAllService {
         }
     }
 
-    async getWorkflowStatus(ctx: IContext, workflowId: string): Promise<ISyncAllStatus> {
-        const status = await this.workflow.getWorkflowStatus(workflowId);
-        if (!status) {
-            return { status: SyncStatus.UNKNOWN };
-        }
-        return { status: status as SyncStatus };
+    async getWorkflowStatus(ctx: IContext, workflowId: string): Promise<SyncallStatus> {
+        const status = await this.workflow.getWorkflow(workflowId);
+        return status.status;
     }
 
     private compareResourcesToRefresh(

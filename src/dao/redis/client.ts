@@ -75,3 +75,66 @@ end
         return success === 1;
     }
 }
+
+export function convertToHashTable(obj: Object): Record<string, string> {
+    const result: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (value === null || value === undefined) {
+            continue;
+        }
+
+        result[key] = convertToRedisValue(value);
+    }
+
+    return result;
+}
+
+export function convertToRedisValue(value: any): string {
+    if (value instanceof Date) {
+        return value.toISOString();
+    } else if (typeof value === 'object') {
+        return JSON.stringify(value);
+    } else {
+        return String(value);
+    }
+}
+
+export function convertFromHashTable<T>(raw: Record<string, string>): T {
+    const result: any = {};
+
+    for (const [key, value] of Object.entries(raw)) {
+        // 尝试 JSON 解析（处理对象和数组）
+        if (value.startsWith('{') || value.startsWith('[')) {
+            try {
+                result[key] = JSON.parse(value);
+                continue;
+            } catch {
+                // 解析失败，按字符串处理
+            }
+        }
+
+        // 尝试 Date 解析（ISO 8601 格式）
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)) {
+            result[key] = new Date(value);
+            continue;
+        }
+
+        // 尝试数字解析
+        if (/^-?\d+(\.\d+)?$/.test(value)) {
+            result[key] = Number(value);
+            continue;
+        }
+
+        // 布尔值
+        if (value === 'true' || value === 'false') {
+            result[key] = value === 'true';
+            continue;
+        }
+
+        // 默认保持字符串
+        result[key] = value;
+    }
+
+    return result as T;
+}
