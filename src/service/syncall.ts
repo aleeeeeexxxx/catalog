@@ -1,12 +1,12 @@
-import { createGlobalContext, createNewContext, IContext } from '../context';
-import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
+import { createNewContext, IContext } from '../context';
+import { getExtractorBySystemType, IBrowseResult, IExtractor } from '../extractor';
 import {
     IStageResource,
     ISystem,
     RedisClient,
     ResourceDatastore,
-    SyncAllWorkflow,
-    SyncStatus,
+    SyncallStatus,
+    SyncallWorkflowDatastore,
     SystemDatastore,
     VERSION_REFERENCED_ONLY,
 } from '../dao';
@@ -14,25 +14,39 @@ import { getLogger } from '../logger';
 import { AsyncTaskService, AsyncTaskUniqueId } from './task';
 import { convertExtractedResourceToStage } from './autoExtraction';
 import { IngestService } from './ingest';
+import { CatalogError } from '../error';
 
 const logger = getLogger(__filename);
 
-const errorSystemNotExist = new Error('system not exist');
-
-export interface IObjectsToRefresh {
-    deleted: IBrowseResult[];
-    outdated: string[];
+export class BreakingError extends CatalogError {
+    constructor(message: string, details: any) {
+        super(message, 500, details);
+    }
 }
 
-export interface ISyncAllStatus {
-    status: SyncStatus;
+export class SystemNotFoundError extends BreakingError {
+    constructor(systemId: string) {
+        super('system not exist', { systemId });
+    }
+}
+
+export class UnknownSyncallWorkflowError extends BreakingError {
+    constructor(workflowId: string) {
+        super('unknown workflowId', { workflowId });
+    }
+}
+
+export class SystemTypeNotSupportError extends BreakingError {
+    constructor(system: ISystem) {
+        super('system type not supported', { ...system });
+    }
 }
 
 export class SyncAllService {
     private resourceStore: ResourceDatastore;
     private systemStore: SystemDatastore;
     private taskq: AsyncTaskService;
-    private workflow: SyncAllWorkflow;
+    private workflow: SyncallWorkflowDatastore;
     private ingest: IngestService;
 
     constructor(
@@ -44,115 +58,66 @@ export class SyncAllService {
     ) {
         this.resourceStore = resourceStore;
         this.systemStore = systemStore;
-        this.workflow = new SyncAllWorkflow(redis);
+        this.workflow = new SyncallWorkflowDatastore(redis);
 
         this.taskq = taskq;
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.BROWSE,
-            handler: this.handleBrowse.bind(this),
-        });
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.EXTRACT,
-            handler: this.handleExtract.bind(this),
-        });
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
-            handler: this.handleMonitorIngest.bind(this),
-        });
+        this.registerAsyncTask();
 
         this.ingest = ingest;
         this.ingest.setIngestCallback(this.createMonitorIngestTask.bind(this));
     }
 
     async start(ctx: IContext, systemId: string): Promise<string> {
-        logger.info(ctx, `Starting sync for system: ${systemId}`);
+        logger.info(ctx, `starting sync all for system: ${systemId}`);
 
         const target = await this.systemStore.get(ctx, systemId);
         if (!target) {
-            logger.error(ctx, `System not found: ${systemId}`);
-            throw errorSystemNotExist;
+            throw new SystemNotFoundError(systemId);
         }
 
-        const workflowId = await this.workflow.createNewWorkflow(
-            ctx.tenantId,
-            ctx.correlationId,
-            target
-        );
+        const workflowId = await this.workflow.createNewWorkflow(ctx, target);
+        logger.info(ctx, `sync all workflow created, workflow id=${workflowId}`);
 
-        logger.info(ctx, `Workflow created, workflow id=${workflowId}`);
-
-        const jobId = await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
-        logger.info(ctx, `Browse job pushed, jobid=${jobId}`);
+        await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
+        logger.debug(ctx, `browse job pushed`);
 
         return workflowId;
     }
 
     async handleBrowse(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.BROWSING);
+        const { ctx, system } = await this.getSyncallContext(workflowId);
 
-        const desc = await this.workflow.getWorkflowDescription(workflowId);
-        if (!desc) {
-            logger.error({ workflowId }, 'Workflow description not found');
+        if (!this.compareAndSetStatus(ctx, workflowId, SyncallStatus.BROWSING)) {
             return;
         }
 
-        const ctx = createNewContext(desc.tenantId);
-        const extractor = getExtractorBySystemType(
+        const browsedResources = await this.browse(ctx, workflowId, system);
+        const current = await this.resourceStore.getResourceVersions(ctx, system.id);
+
+        const { deleted, outdated } = await this.compareResourcesToRefresh(
             ctx,
-            desc.system.type,
-            desc.system.uniqueIdentifier
-        );
-
-        if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${desc.system.type}`);
-            return;
-        }
-
-        logger.info(ctx, 'Browsing resources');
-
-        const browsedResources = await extractor.browse(ctx, desc.system.id);
-
-        logger.info(ctx, `Browsed ${browsedResources.length} resources`);
-
-        const current = await this.resourceStore.getResourceVersions(ctx, desc.system.id);
-
-        const { deleted, outdated } = this.compareResourcesToRefresh(
-            ctx,
+            workflowId,
             browsedResources,
             current
         );
 
-        logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
-
-        await this.stageDeletedResources(ctx, deleted, desc.system, workflowId);
+        await this.stageDeletedResources(ctx, deleted, system, workflowId);
         await this.workflow.cacheOutdated(workflowId, outdated);
 
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.BROWSED);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSED);
 
         await this.taskq.push(ctx, AsyncTaskUniqueId.EXTRACT, workflowId);
-        logger.info(ctx, 'Browse completed');
+        logger.info(ctx, 'browse completed');
     }
 
     async handleExtract(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.EXTRACTING);
+        const { ctx, system } = await this.getSyncallContext(workflowId);
 
-        const desc = await this.workflow.getWorkflowDescription(workflowId);
-        if (!desc) {
-            logger.error({ workflowId }, 'Workflow description not found');
+        if (!this.compareAndSetStatus(ctx, workflowId, SyncallStatus.EXTRACTING)) {
             return;
         }
 
-        const ctx = createNewContext(desc.tenantId);
-        const extractor = getExtractorBySystemType(
-            ctx,
-            desc.system.type,
-            desc.system.uniqueIdentifier
-        );
-
-        if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${desc.system.type}`);
-            return;
-        }
+        const extractor = this.getExtractorBySystemType(ctx, system);
 
         const resourceIds = await this.workflow.getOutdatedResources(workflowId);
         logger.info(ctx, `Extracting ${resourceIds.length} resources`);
@@ -169,22 +134,18 @@ export class SyncAllService {
 
         logger.info(ctx, 'Extract completed');
 
-        await this.workflow.setWorkflowStatus(workflowId, SyncStatus.INGESTING);
+        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.INGESTING);
     }
 
     async handleMonitorIngest(workflowIds: string[]) {
         for (let workflowId of workflowIds) {
             logger.info(`resources are ingested for workflow, workflow id=${workflowId}`);
 
-            const desc = await this.workflow.getWorkflowDescription(workflowId);
-            if (!desc) {
-                logger.error({ workflowId }, 'Workflow description not found');
-                return;
-            }
-            const ctx = createNewContext(desc.tenantId);
+            const { ctx, system } = await this.getSyncallContext(workflowId);
+
             const left = await this.ingest.countUningested(ctx, workflowId);
             if (left === 0) {
-                await this.workflow.setWorkflowStatus(workflowId, SyncStatus.COMPLETED);
+                await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.COMPLETED);
                 logger.info(ctx, 'Workflow completed');
             } else {
                 logger.info(ctx, `Ingest monitoring: ${left} remaining`);
@@ -192,19 +153,17 @@ export class SyncAllService {
         }
     }
 
-    async getWorkflowStatus(ctx: IContext, workflowId: string): Promise<ISyncAllStatus> {
-        const status = await this.workflow.getWorkflowStatus(workflowId);
-        if (!status) {
-            return { status: SyncStatus.UNKNOWN };
-        }
-        return { status: status as SyncStatus };
+    async getWorkflowStatus(ctx: IContext, workflowId: string): Promise<SyncallStatus> {
+        const status = await this.workflow.getWorkflow(workflowId);
+        return status.status;
     }
 
-    private compareResourcesToRefresh(
+    private async compareResourcesToRefresh(
         ctx: IContext,
+        workflowId: string,
         browsed: IBrowseResult[],
         current: IBrowseResult[]
-    ): { deleted: IBrowseResult[]; outdated: string[] } {
+    ): Promise<{ deleted: IBrowseResult[]; outdated: string[] }> {
         const deleted: IBrowseResult[] = [];
         const outdated: string[] = [];
 
@@ -234,6 +193,10 @@ export class SyncAllService {
             }
         });
 
+        await this.workflow.set(workflowId, 'deleted', deleted.length);
+        await this.workflow.set(workflowId, 'outdated', outdated.length);
+
+        logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
         return { deleted, outdated };
     }
 
@@ -261,5 +224,69 @@ export class SyncAllService {
     private async createMonitorIngestTask(workflowIds: string[]) {
         const ctx = createNewContext('createMonitorIngestTask');
         await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowIds);
+    }
+
+    private async compareAndSetStatus(
+        ctx: IContext,
+        workflowId: string,
+        status: SyncallStatus
+    ): Promise<boolean> {
+        const { old, set } = await this.workflow.setWorkflowStatus(workflowId, status);
+
+        if (!set && old === SyncallStatus.TIMEOUT) {
+            logger.info(ctx, `syncall abort when ${status} since it's already timeout`);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async getSyncallContext(
+        workflowId: string
+    ): Promise<{ ctx: IContext; system: ISystem }> {
+        const desc = await this.workflow.getWorkflow(workflowId);
+        if (!desc) {
+            throw new UnknownSyncallWorkflowError(workflowId);
+        }
+        const ctx = createNewContext(desc.tenantId, desc.correlationId);
+
+        return { ctx, system: desc.system };
+    }
+
+    private getExtractorBySystemType(ctx: IContext, system: ISystem) {
+        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
+
+        if (!extractor) {
+            logger.error(ctx, `Extractor not found for type: ${system.type}`);
+            throw new SystemTypeNotSupportError(system);
+        }
+
+        return extractor;
+    }
+
+    private async browse(ctx: IContext, workflowId: string, system: ISystem) {
+        const extractor = this.getExtractorBySystemType(ctx, system);
+
+        logger.info(ctx, 'browsing resources');
+        const browsedResources = await extractor.browse(ctx, system.id);
+        logger.info(ctx, `browsed ${browsedResources.length} resources`);
+
+        await this.workflow.set(workflowId, 'browsed', browsedResources.length);
+        return browsedResources;
+    }
+
+    private registerAsyncTask() {
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.BROWSE,
+            handler: this.handleBrowse.bind(this),
+        });
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.EXTRACT,
+            handler: this.handleExtract.bind(this),
+        });
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
+            handler: this.handleMonitorIngest.bind(this),
+        });
     }
 }

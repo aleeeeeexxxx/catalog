@@ -8,6 +8,7 @@ export enum RoutingKey {
     EXTRACT = 'extract',
     INGEST = 'ingest',
     MONITOR_INGEST = 'monitorIngest',
+    SYNC_ALL_CLOCK = 'syncAllClock',
 }
 
 const EXCHANGE = 'catalog_task_exchange';
@@ -15,12 +16,11 @@ const QUEUE = 'catalog_task_queue';
 
 export enum AsyncTaskUniqueId {
     INGEST = 'ingest',
+
     BROWSE = 'browse',
-    SNAPSHOT = 'snapshot',
     EXTRACT = 'extract',
     MONITOR_INGEST = 'monitoring',
-
-    COUNTER_CLOCK = 'cc',
+    SYNC_ALL_CLOCK = 'sync_all_clock',
 }
 
 export type TaskHandler<T> = (param: T) => Promise<void>;
