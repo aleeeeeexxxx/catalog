@@ -6,7 +6,7 @@ import {
     RelationshipDatastore,
     ResourceDatastore,
     StageDatastore,
-    SyncStatus,
+    SyncallStatus,
     SystemDatastore,
     VERSION_REFERENCED_ONLY,
 } from '../../src/dao';
@@ -160,7 +160,7 @@ describe('Sync all workflow', () => {
         await sleep(2);
 
         const status = await service.getWorkflowStatus(ctx, workflowId);
-        expect(status.status).toBe(SyncStatus.COMPLETED);
+        expect(status).toBe(SyncallStatus.COMPLETED);
 
         // Check extractBatch was called with correct parameters
         expect(mockExtractor.extractBatch).toHaveBeenCalledWith(expect.anything(), [
