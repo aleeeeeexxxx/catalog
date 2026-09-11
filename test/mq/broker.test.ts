@@ -37,7 +37,7 @@ describe('RabbitMQ Broker', () => {
             waiter.done();
         });
 
-        broker.consume(ctx, testTopic, mockHandler);
+        broker.consume(testTopic, mockHandler);
         await broker.start(ctx);
 
         await broker.send(ctx, testTopic, { message: 'hello world' });
@@ -61,7 +61,7 @@ describe('RabbitMQ Broker', () => {
             waiter.done();
         });
 
-        broker.consume(ctx, testTopic, mockHandler);
+        broker.consume(testTopic, mockHandler);
         await broker.start(ctx);
 
         await broker.send(ctx, testTopic, { message: 'message1' });
@@ -79,10 +79,10 @@ describe('RabbitMQ Broker', () => {
         const ctx = createNewContext('test-tenant');
         const testTopic = 'test.duplicate';
 
-        broker.consume(ctx, testTopic, mockHandler);
+        broker.consume(testTopic, mockHandler);
 
         expect(() => {
-            broker.consume(ctx, testTopic, mockHandler);
+            broker.consume(testTopic, mockHandler);
         }).toThrow('Handler already registered for topic: test.duplicate');
     });
 });
@@ -131,7 +131,7 @@ describe('RabbitMQ Delay Broker', () => {
             waiter.done();
         });
 
-        delayBroker.consumeDelay(ctx, testTopic, mockDelayHandler, delayMs);
+        delayBroker.consumeDelay(testTopic, mockDelayHandler, delayMs);
         await delayBroker.start(ctx);
 
         await delayBroker.sendDelayed(ctx, testTopic, { message: 'delayed hello' });
@@ -163,8 +163,8 @@ describe('RabbitMQ Delay Broker', () => {
             waiter.done();
         });
 
-        delayBroker.consumeDelay(ctx, topic1, handler1, delayMs);
-        delayBroker.consumeDelay(ctx, topic2, handler2, delayMs);
+        delayBroker.consumeDelay(topic1, handler1, delayMs);
+        delayBroker.consumeDelay(topic2, handler2, delayMs);
         await delayBroker.start(ctx);
 
         await delayBroker.sendDelayed(ctx, topic1, { message: 'msg1' });
@@ -198,8 +198,8 @@ describe('RabbitMQ Delay Broker', () => {
             waiter.done();
         });
 
-        delayBroker.consumeDelay(ctx, testTopic, mockDelayHandler, shortDelay);
-        delayBroker.consumeDelay(ctx, testTopic, mockDelayHandler, longDelay);
+        delayBroker.consumeDelay(testTopic, mockDelayHandler, shortDelay);
+        delayBroker.consumeDelay(testTopic, mockDelayHandler, longDelay);
         await delayBroker.start(ctx);
 
         await delayBroker.sendDelayed(ctx, testTopic, { message: 'short' });
@@ -230,7 +230,7 @@ describe('RabbitMQ Delay Broker', () => {
             waiter.done();
         });
 
-        delayBroker.consume(ctx, testTopic, mockDelayHandler);
+        delayBroker.consume(testTopic, mockDelayHandler);
         await delayBroker.start(ctx);
 
         // Use normal send method (not delayed)

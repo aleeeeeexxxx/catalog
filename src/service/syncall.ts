@@ -47,16 +47,15 @@ export class SyncAllService {
         this.workflow = new SyncAllWorkflow(redis);
 
         this.taskq = taskq;
-        const ctx = createGlobalContext();
-        this.taskq.register(ctx, {
+        this.taskq.register({
             uniqueId: AsyncTaskUniqueId.BROWSE,
             handler: this.handleBrowse.bind(this),
         });
-        this.taskq.register(ctx, {
+        this.taskq.register({
             uniqueId: AsyncTaskUniqueId.EXTRACT,
             handler: this.handleExtract.bind(this),
         });
-        this.taskq.register(ctx, {
+        this.taskq.register({
             uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
             handler: this.handleMonitorIngest.bind(this),
         });

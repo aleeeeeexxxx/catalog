@@ -22,7 +22,7 @@ describe('AsyncTaskService', () => {
         });
 
         const taskUniqueId = 'test' as AsyncTaskUniqueId;
-        taskq.register(ctx, {
+        taskq.register({
             uniqueId: taskUniqueId,
             handler: taskHandler,
         });

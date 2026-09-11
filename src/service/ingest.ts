@@ -41,7 +41,7 @@ export class IngestService {
         this.relationshipStore = relationshipStore;
 
         this.taskq = taskq;
-        this.taskq.register(createGlobalContext(), {
+        this.taskq.register({
             uniqueId: AsyncTaskUniqueId.INGEST,
             handler: this.asyncIngestTaskHandler.bind(this),
         });
