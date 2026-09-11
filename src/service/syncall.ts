@@ -75,33 +75,26 @@ export class SyncAllService {
     }
 
     async handleBrowse(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSING);
+        const { ctx, system } = await this.getSyncallContext(workflowId);
 
-        const desc = await this.workflow.getWorkflow(workflowId);
-        if (!desc) {
-            logger.error({ workflowId }, 'Workflow description not found');
+        if (!this.compareAndSetStatus(ctx, workflowId, SyncallStatus.BROWSING)) {
             return;
         }
 
-        const ctx = createNewContext(desc.tenantId);
-        const extractor = getExtractorBySystemType(
-            ctx,
-            desc.system.type,
-            desc.system.uniqueIdentifier
-        );
+        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
 
         if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${desc.system.type}`);
+            logger.error(ctx, `Extractor not found for type: ${system.type}`);
             return;
         }
 
         logger.info(ctx, 'Browsing resources');
 
-        const browsedResources = await extractor.browse(ctx, desc.system.id);
+        const browsedResources = await extractor.browse(ctx, system.id);
 
         logger.info(ctx, `Browsed ${browsedResources.length} resources`);
 
-        const current = await this.resourceStore.getResourceVersions(ctx, desc.system.id);
+        const current = await this.resourceStore.getResourceVersions(ctx, system.id);
 
         const { deleted, outdated } = this.compareResourcesToRefresh(
             ctx,
@@ -111,7 +104,7 @@ export class SyncAllService {
 
         logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
 
-        await this.stageDeletedResources(ctx, deleted, desc.system, workflowId);
+        await this.stageDeletedResources(ctx, deleted, system, workflowId);
         await this.workflow.cacheOutdated(workflowId, outdated);
 
         await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSED);
@@ -121,23 +114,16 @@ export class SyncAllService {
     }
 
     async handleExtract(workflowId: string) {
-        await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.EXTRACTING);
+        const { ctx, system } = await this.getSyncallContext(workflowId);
 
-        const desc = await this.workflow.getWorkflow(workflowId);
-        if (!desc) {
-            logger.error({ workflowId }, 'Workflow description not found');
+        if (!this.compareAndSetStatus(ctx, workflowId, SyncallStatus.EXTRACTING)) {
             return;
         }
 
-        const ctx = createNewContext(desc.tenantId);
-        const extractor = getExtractorBySystemType(
-            ctx,
-            desc.system.type,
-            desc.system.uniqueIdentifier
-        );
+        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
 
         if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${desc.system.type}`);
+            logger.error(ctx, `Extractor not found for type: ${system.type}`);
             return;
         }
 
@@ -163,12 +149,8 @@ export class SyncAllService {
         for (let workflowId of workflowIds) {
             logger.info(`resources are ingested for workflow, workflow id=${workflowId}`);
 
-            const desc = await this.workflow.getWorkflow(workflowId);
-            if (!desc) {
-                logger.error({ workflowId }, 'Workflow description not found');
-                return;
-            }
-            const ctx = createNewContext(desc.tenantId);
+            const { ctx, system } = await this.getSyncallContext(workflowId);
+
             const left = await this.ingest.countUningested(ctx, workflowId);
             if (left === 0) {
                 await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.COMPLETED);
@@ -245,5 +227,33 @@ export class SyncAllService {
     private async createMonitorIngestTask(workflowIds: string[]) {
         const ctx = createNewContext('createMonitorIngestTask');
         await this.taskq.push(ctx, AsyncTaskUniqueId.MONITOR_INGEST, workflowIds);
+    }
+
+    private async compareAndSetStatus(
+        ctx: IContext,
+        workflowId: string,
+        status: SyncallStatus
+    ): Promise<boolean> {
+        const { old, set } = await this.workflow.setWorkflowStatus(workflowId, status);
+
+        if (!set && old === SyncallStatus.TIMEOUT) {
+            logger.info(ctx, `abort ${status} since it's already timeout`);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async getSyncallContext(
+        workflowId: string
+    ): Promise<{ ctx: IContext; system: ISystem }> {
+        const desc = await this.workflow.getWorkflow(workflowId);
+        if (!desc) {
+            logger.error({ workflowId }, 'workflow description not found');
+            throw new Error(`unknown workflow ${workflowId}`);
+        }
+        const ctx = createNewContext(desc.tenantId, desc.correlationId);
+
+        return { ctx, system: desc.system };
     }
 }
