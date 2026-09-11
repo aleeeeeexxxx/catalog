@@ -1,5 +1,5 @@
-import { createGlobalContext, createNewContext, IContext } from '../context';
-import { getExtractorBySystemType, IBrowseResult, IExtractedResource } from '../extractor';
+import { createNewContext, IContext } from '../context';
+import { getExtractorBySystemType, IBrowseResult, IExtractor } from '../extractor';
 import {
     IStageResource,
     ISystem,
@@ -14,10 +14,33 @@ import { getLogger } from '../logger';
 import { AsyncTaskService, AsyncTaskUniqueId } from './task';
 import { convertExtractedResourceToStage } from './autoExtraction';
 import { IngestService } from './ingest';
+import { CatalogError } from '../error';
 
 const logger = getLogger(__filename);
 
-const errorSystemNotExist = new Error('system not exist');
+export class BreakingError extends CatalogError {
+    constructor(message: string, details: any) {
+        super(message, 500, details);
+    }
+}
+
+export class SystemNotFoundError extends BreakingError {
+    constructor(systemId: string) {
+        super('system not exist', { systemId });
+    }
+}
+
+export class UnknownSyncallWorkflowError extends BreakingError {
+    constructor(workflowId: string) {
+        super('unknown workflowId', { workflowId });
+    }
+}
+
+export class SystemTypeNotSupportError extends BreakingError {
+    constructor(system: ISystem) {
+        super('system type not supported', { ...system });
+    }
+}
 
 export class SyncAllService {
     private resourceStore: ResourceDatastore;
@@ -38,18 +61,7 @@ export class SyncAllService {
         this.workflow = new SyncallWorkflowDatastore(redis);
 
         this.taskq = taskq;
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.BROWSE,
-            handler: this.handleBrowse.bind(this),
-        });
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.EXTRACT,
-            handler: this.handleExtract.bind(this),
-        });
-        this.taskq.register({
-            uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
-            handler: this.handleMonitorIngest.bind(this),
-        });
+        this.registerAsyncTask();
 
         this.ingest = ingest;
         this.ingest.setIngestCallback(this.createMonitorIngestTask.bind(this));
@@ -60,16 +72,14 @@ export class SyncAllService {
 
         const target = await this.systemStore.get(ctx, systemId);
         if (!target) {
-            logger.error(ctx, `System not found: ${systemId}`);
-            throw errorSystemNotExist;
+            throw new SystemNotFoundError(systemId);
         }
 
         const workflowId = await this.workflow.createNewWorkflow(ctx, target);
-
         logger.info(ctx, `sync all workflow created, workflow id=${workflowId}`);
 
         await this.taskq.push(ctx, AsyncTaskUniqueId.BROWSE, workflowId);
-        logger.info(ctx, `browse job pushed`);
+        logger.debug(ctx, `browse job pushed`);
 
         return workflowId;
     }
@@ -81,28 +91,15 @@ export class SyncAllService {
             return;
         }
 
-        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
-
-        if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${system.type}`);
-            return;
-        }
-
-        logger.info(ctx, 'Browsing resources');
-
-        const browsedResources = await extractor.browse(ctx, system.id);
-
-        logger.info(ctx, `Browsed ${browsedResources.length} resources`);
-
+        const browsedResources = await this.browse(ctx, workflowId, system);
         const current = await this.resourceStore.getResourceVersions(ctx, system.id);
 
-        const { deleted, outdated } = this.compareResourcesToRefresh(
+        const { deleted, outdated } = await this.compareResourcesToRefresh(
             ctx,
+            workflowId,
             browsedResources,
             current
         );
-
-        logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
 
         await this.stageDeletedResources(ctx, deleted, system, workflowId);
         await this.workflow.cacheOutdated(workflowId, outdated);
@@ -110,7 +107,7 @@ export class SyncAllService {
         await this.workflow.setWorkflowStatus(workflowId, SyncallStatus.BROWSED);
 
         await this.taskq.push(ctx, AsyncTaskUniqueId.EXTRACT, workflowId);
-        logger.info(ctx, 'Browse completed');
+        logger.info(ctx, 'browse completed');
     }
 
     async handleExtract(workflowId: string) {
@@ -120,12 +117,7 @@ export class SyncAllService {
             return;
         }
 
-        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
-
-        if (!extractor) {
-            logger.error(ctx, `Extractor not found for type: ${system.type}`);
-            return;
-        }
+        const extractor = this.getExtractorBySystemType(ctx, system);
 
         const resourceIds = await this.workflow.getOutdatedResources(workflowId);
         logger.info(ctx, `Extracting ${resourceIds.length} resources`);
@@ -166,11 +158,12 @@ export class SyncAllService {
         return status.status;
     }
 
-    private compareResourcesToRefresh(
+    private async compareResourcesToRefresh(
         ctx: IContext,
+        workflowId: string,
         browsed: IBrowseResult[],
         current: IBrowseResult[]
-    ): { deleted: IBrowseResult[]; outdated: string[] } {
+    ): Promise<{ deleted: IBrowseResult[]; outdated: string[] }> {
         const deleted: IBrowseResult[] = [];
         const outdated: string[] = [];
 
@@ -200,6 +193,10 @@ export class SyncAllService {
             }
         });
 
+        await this.workflow.set(workflowId, 'deleted', deleted.length);
+        await this.workflow.set(workflowId, 'outdated', outdated.length);
+
+        logger.info(ctx, `Found ${deleted.length} deleted, ${outdated.length} outdated`);
         return { deleted, outdated };
     }
 
@@ -237,7 +234,7 @@ export class SyncAllService {
         const { old, set } = await this.workflow.setWorkflowStatus(workflowId, status);
 
         if (!set && old === SyncallStatus.TIMEOUT) {
-            logger.info(ctx, `abort ${status} since it's already timeout`);
+            logger.info(ctx, `syncall abort when ${status} since it's already timeout`);
             return false;
         }
 
@@ -249,11 +246,47 @@ export class SyncAllService {
     ): Promise<{ ctx: IContext; system: ISystem }> {
         const desc = await this.workflow.getWorkflow(workflowId);
         if (!desc) {
-            logger.error({ workflowId }, 'workflow description not found');
-            throw new Error(`unknown workflow ${workflowId}`);
+            throw new UnknownSyncallWorkflowError(workflowId);
         }
         const ctx = createNewContext(desc.tenantId, desc.correlationId);
 
         return { ctx, system: desc.system };
+    }
+
+    private getExtractorBySystemType(ctx: IContext, system: ISystem) {
+        const extractor = getExtractorBySystemType(ctx, system.type, system.uniqueIdentifier);
+
+        if (!extractor) {
+            logger.error(ctx, `Extractor not found for type: ${system.type}`);
+            throw new SystemTypeNotSupportError(system);
+        }
+
+        return extractor;
+    }
+
+    private async browse(ctx: IContext, workflowId: string, system: ISystem) {
+        const extractor = this.getExtractorBySystemType(ctx, system);
+
+        logger.info(ctx, 'browsing resources');
+        const browsedResources = await extractor.browse(ctx, system.id);
+        logger.info(ctx, `browsed ${browsedResources.length} resources`);
+
+        await this.workflow.set(workflowId, 'browsed', browsedResources.length);
+        return browsedResources;
+    }
+
+    private registerAsyncTask() {
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.BROWSE,
+            handler: this.handleBrowse.bind(this),
+        });
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.EXTRACT,
+            handler: this.handleExtract.bind(this),
+        });
+        this.taskq.register({
+            uniqueId: AsyncTaskUniqueId.MONITOR_INGEST,
+            handler: this.handleMonitorIngest.bind(this),
+        });
     }
 }
